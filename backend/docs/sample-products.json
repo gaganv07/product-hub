@@ -1,0 +1,183 @@
+[
+  {
+    "productId": "P1001",
+    "name": "Dell Inspiron 15 3520",
+    "brand": "Dell",
+    "category": "Laptops",
+    "price": 54990,
+    "description": "Powerful daily business and coding laptop with high refresh rate display and anti-glare screen.",
+    "image": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "16GB DDR4",
+      "storage": "512GB NVMe SSD",
+      "processor": "Intel Core i5-1235U 12th Gen"
+    },
+    "stock": 25
+  },
+  {
+    "productId": "P1002",
+    "name": "Apple MacBook Air M2",
+    "brand": "Apple",
+    "category": "Laptops",
+    "price": 99900,
+    "description": "Strikingly thin design with all-day battery life, Liquid Retina display, and blazing-fast M2 chip.",
+    "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "8GB Unified Memory",
+      "storage": "256GB SSD",
+      "processor": "Apple M2 8-core CPU"
+    },
+    "stock": 18
+  },
+  {
+    "productId": "P1003",
+    "name": "Lenovo ThinkPad E14 Gen 5",
+    "brand": "Lenovo",
+    "category": "Laptops",
+    "price": 68500,
+    "description": "Enterprise-grade reliability with legendary keyboard, military-spec durability, and robust security features.",
+    "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "16GB DDR4",
+      "storage": "512GB Gen4 SSD",
+      "processor": "AMD Ryzen 5 7530U"
+    },
+    "stock": 12
+  },
+  {
+    "productId": "P1004",
+    "name": "Samsung Galaxy S24 Ultra",
+    "brand": "Samsung",
+    "category": "Smartphones",
+    "price": 129999,
+    "description": "Titanium exterior with 200MP camera system, built-in S Pen, and advanced mobile productivity features.",
+    "image": "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "12GB LPDDR5X",
+      "storage": "512GB UFS 4.0",
+      "processor": "Snapdragon 8 Gen 3 for Galaxy"
+    },
+    "stock": 15
+  },
+  {
+    "productId": "P1005",
+    "name": "Apple iPhone 15 Pro",
+    "brand": "Apple",
+    "category": "Smartphones",
+    "price": 134900,
+    "description": "Aerospace-grade titanium design with A17 Pro chip, customizable Action button, and 48MP main camera.",
+    "image": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "8GB LPDDR5",
+      "storage": "256GB NVMe",
+      "processor": "Apple A17 Pro Hexa-Core"
+    },
+    "stock": 20
+  },
+  {
+    "productId": "P1006",
+    "name": "Google Pixel 8 Pro",
+    "brand": "Google",
+    "category": "Smartphones",
+    "price": 106999,
+    "description": "Pure Android experience with Google Tensor G3, extraordinary computational photography, and Super Actua display.",
+    "image": "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "12GB LPDDR5X",
+      "storage": "128GB UFS 3.1",
+      "processor": "Google Tensor G3"
+    },
+    "stock": 10
+  },
+  {
+    "productId": "P1007",
+    "name": "Sony WH-1000XM5 Wireless Headphones",
+    "brand": "Sony",
+    "category": "Electronics",
+    "price": 29990,
+    "description": "Industry-leading noise canceling with two processors and 8 microphones for exceptional call quality and acoustic precision.",
+    "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "N/A",
+      "storage": "N/A",
+      "processor": "Integrated Processor V1 + QN1"
+    },
+    "stock": 35
+  },
+  {
+    "productId": "P1008",
+    "name": "Apple iPad Air 11-inch M2",
+    "brand": "Apple",
+    "category": "Electronics",
+    "price": 59900,
+    "description": "Incredibly versatile tablet powered by the M2 chip, vibrant Liquid Retina display, and Apple Pencil Pro support.",
+    "image": "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "8GB Unified Memory",
+      "storage": "128GB SSD",
+      "processor": "Apple M2 8-core CPU"
+    },
+    "stock": 14
+  },
+  {
+    "productId": "P1009",
+    "name": "Logitech MX Master 3S Wireless Mouse",
+    "brand": "Logitech",
+    "category": "Accessories",
+    "price": 9995,
+    "description": "Ergonomic performance mouse with 8000 DPI track-on-glass sensor and ultra-quiet MagSpeed electromagnetic scrolling.",
+    "image": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "N/A",
+      "storage": "N/A",
+      "processor": "Darkfield High Precision Sensor"
+    },
+    "stock": 40
+  },
+  {
+    "productId": "P1010",
+    "name": "Keychron K2 Pro Mechanical Keyboard",
+    "brand": "Keychron",
+    "category": "Accessories",
+    "price": 8499,
+    "description": "Wireless custom mechanical keyboard with QMK/VIA programmable firmware, hot-swappable switches, and RGB backlighting.",
+    "image": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "N/A",
+      "storage": "N/A",
+      "processor": "ARM Cortex-M4 32-bit STM32L432"
+    },
+    "stock": 30
+  },
+  {
+    "productId": "P1011",
+    "name": "Dyson V12 Detect Slim Vacuum Cleaner",
+    "brand": "Dyson",
+    "category": "Home Appliances",
+    "price": 55900,
+    "description": "Lightweight cordless vacuum with laser illumination that reveals invisible dust and piezo sensor for particle count measurement.",
+    "image": "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "N/A",
+      "storage": "N/A",
+      "processor": "Dyson Hyperdymium Motor 125k RPM"
+    },
+    "stock": 8
+  },
+  {
+    "productId": "P1012",
+    "name": "Philips Series 3000i Smart Air Purifier",
+    "brand": "Philips",
+    "category": "Home Appliances",
+    "price": 24995,
+    "description": "Connected HEPA smart air purifier removing 99.97% of airborne allergens and ultrafine particles with real-time AeraSense display.",
+    "image": "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&auto=format&fit=crop&q=80",
+    "specifications": {
+      "ram": "N/A",
+      "storage": "N/A",
+      "processor": "Smart AeraSense Microprocessor"
+    },
+    "stock": 16
+  }
+]
+

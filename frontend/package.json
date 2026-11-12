@@ -1,0 +1,22 @@
+{
+  "name": "producthub-frontend",
+  "version": "1.0.0",
+  "description": "ProductHub - Cloud-Based Product Catalogue Frontend Interface",
+  "author": "Deviprasad & Gagan Gowda",
+  "license": "ISC",
+  "main": "index.html",
+  "scripts": {
+    "test": "node --test tests/frontend.test.js",
+    "serve": "node scripts/serve.js",
+    "start": "node scripts/serve.js"
+  },
+  "keywords": [
+    "producthub",
+    "frontend",
+    "catalogue",
+    "bootstrap5",
+    "javascript",
+    "document-database"
+  ]
+}
+
