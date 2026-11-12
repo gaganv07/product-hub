@@ -4,11 +4,17 @@
  * and prints masked configuration without exposing credentials.
  */
 
+const dns = require('dns');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
+const currentDns = dns.getServers();
+if (currentDns.length > 0 && currentDns.every((s) => s === '127.0.0.1' || s === '::1')) {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
 
 // Mask credentials in connection string
 const maskUri = (uri) => {
@@ -47,12 +53,12 @@ const verifyDatabase = async () => {
   }
 
   console.log('\n📡 Attempting secure TLS/SSL handshake with MongoDB Atlas...');
-  console.log('   Target Database: product_catalogue_db');
+  console.log('   Target Database: product_catalogue');
   const startTime = Date.now();
 
   try {
     const conn = await mongoose.connect(uri, {
-      dbName: 'product_catalogue_db',
+      dbName: 'product_catalogue',
       serverSelectionTimeoutMS: 5000,
       autoIndex: true
     });

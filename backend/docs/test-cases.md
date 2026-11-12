@@ -4,7 +4,7 @@
 
 * **Testing Harness:** Node.js Native Test Runner (`node:test`, `node:assert/strict`) & Supertest
 * **Live Integration Auditor:** `scripts/audit.js` (End-to-End HTTP & Database Operations)
-* **Database Engines Verified:** MongoDB Atlas Cloud Database (`product_catalogue_db`) & Test Sandbox
+* **Database Engines Verified:** MongoDB Atlas Cloud Database (`product_catalogue`) & Test Sandbox
 * **Date of Audit:** November 2026
 * **Audited By:** Deviprasad & Gagan Gowda
 * **Automated Unit & Integration Tests:** 17 Passed / 0 Failed (100% Pass Rate)
@@ -21,7 +21,7 @@ During the audit, the following vulnerabilities and edge-case bugs were discover
 | **BUG-01** | `controllers/productController.js` | Unescaped user search queries containing regex characters (e.g. `(`, `)`, `+`, `*`) caused `SyntaxError` and HTTP 500 server crashes. | Implemented `escapeRegex()` helper sanitizing all search strings before compiling regular expressions. | **RESOLVED & VERIFIED (TC-13 / AUDIT-10)** |
 | **BUG-02** | `controllers/productController.js` | Non-numeric pagination query parameters (`page=abc`) evaluated to `NaN`, leading to `skip(NaN)` query crashes. | Added explicit `isNaN()` fallbacks defaulting invalid page/limit inputs to 1 and 12 respectively. | **RESOLVED & VERIFIED (TC-16 / AUDIT-06)** |
 | **BUG-03** | `controllers/productController.js` | Product creation and update accepted negative price values and invalid Product ID formats. | Added strict input validation returning HTTP 400 with explicit descriptive messages for negative prices and non-compliant SKU formats. | **RESOLVED & VERIFIED (TC-14, TC-15 / AUDIT-13)** |
-| **BUG-04** | `config/database.js` | Insecure connection fallback and potential connection buffering when Atlas was unreachable. | Enforced dedicated MongoDB Atlas database (`product_catalogue_db`) with safe HTTP 503 fail-safe states and credential-masked logging. | **RESOLVED & VERIFIED (AUDIT-00A, AUDIT-00B)** |
+| **BUG-04** | `config/database.js` | Insecure connection fallback and potential connection buffering when Atlas was unreachable. | Enforced dedicated MongoDB Atlas database (`product_catalogue`) with safe HTTP 503 fail-safe states and credential-masked logging. | **RESOLVED & VERIFIED (AUDIT-00A, AUDIT-00B)** |
 
 ---
 

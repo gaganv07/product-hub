@@ -17,7 +17,7 @@ Use this checklist to ensure all 12 required screenshots are included:
 | **5** | **Search Results** | Catalogue view with a search term entered (e.g. "Dell" or "MacBook") showing filtered matching products. | Type query in search bar and click "Search". | [ ] |
 | **6** | **Update Operation** | "Update Product Document" modal pre-filled with existing data and modified values before saving. | Click the pencil edit icon on any product card. | [ ] |
 | **7** | **Delete Confirmation** | "Confirm Deletion" modal dialog warning the user before removing the document from MongoDB Atlas. | Click the red trash icon on any product card. | [ ] |
-| **8** | **MongoDB Atlas Collection** | MongoDB Atlas Web UI showing `product_catalogue_db` database and `products` collection with document count. | Log in to cloud.mongodb.com &rarr; Databases &rarr; Browse Collections. | [ ] |
+| **8** | **MongoDB Atlas Collection** | MongoDB Atlas Web UI showing `product_catalogue` database and `products` collection with document count. | Log in to cloud.mongodb.com &rarr; Databases &rarr; Browse Collections. | [ ] |
 | **9** | **Sample MongoDB Document** | Expanded JSON/BSON document view inside MongoDB Atlas (showing nested `specifications` object). | Click on any document in MongoDB Atlas collection view. | [ ] |
 | **10**| **Database Connection Verification** | Terminal output of Node.js server startup showing `✅ MongoDB Connected successfully` or `npm run seed` completion. | Capture terminal console log output. | [ ] |
 | **11**| **AWS EC2 Instance** | AWS EC2 Console showing running instance `ProductHub-WebServer` with Public IPv4 and Security Group rules. | Open AWS EC2 Console &rarr; Instances view. | [ ] |

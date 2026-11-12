@@ -31,7 +31,7 @@ product-hub/
     ├── package.json             # Backend dependencies and scripts
     ├── .env.example             # Environment variable template (copy to .env)
     ├── ecosystem.config.js      # PM2 production process configuration
-    ├── config/database.js       # MongoDB Atlas connection manager (product_catalogue_db)
+    ├── config/database.js       # MongoDB Atlas connection manager (product_catalogue)
     ├── models/Product.js        # Mongoose Product schema with embedded specifications
     ├── controllers/             # CRUD, search, and dashboard aggregation controllers
     ├── routes/                  # Express REST API routes (/api/products)
@@ -70,7 +70,7 @@ product-hub/
    NODE_ENV=development
    MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-host>/product_catalogue?retryWrites=true&w=majority&appName=ProductHub
    ```
-   > **Note:** The backend enforces the dedicated database name `product_catalogue_db`. Never commit `.env` to Git.
+   > **Note:** The backend enforces the dedicated database name `product_catalogue`. Never commit `.env` to Git.
 
 3. **Verify MongoDB Atlas connectivity:**
    ```bash

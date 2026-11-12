@@ -20,8 +20,23 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Enable CORS
-app.use(cors());
+// Configure CORS (local frontend http://localhost:3000 + configurable CORS_ORIGIN)
+const defaultOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+const envOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
+  : [];
+const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS policy blocked origin: ${origin}`), false);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // HTTP Request Logger
 if (process.env.NODE_ENV !== 'test') {
@@ -51,7 +66,7 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     database: {
       status: statusMap[dbStatus] || 'Disconnected',
-      name: 'product_catalogue_db'
+      name: mongoose.connection.name || 'product_catalogue'
     },
     system: {
       nodeVersion: process.version,

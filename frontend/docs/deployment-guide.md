@@ -36,7 +36,7 @@ This guide details how to deploy the static frontend interface of **ProductHub**
   │          Database Storage Tier                │
   │        (MongoDB Atlas Cloud Cluster)          │
   │                                               │
-  │   • Database: product_catalogue_db            │
+  │   • Database: product_catalogue            │
   │   • Collection: products                      │
   └───────────────────────────────────────────────┘
 ```

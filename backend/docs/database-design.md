@@ -3,7 +3,7 @@
 ## 1. Database Identification & Parameters
 
 * **Database Service:** MongoDB Atlas (Cloud Document Database)
-* **Database Name:** `product_catalogue_db`
+* **Database Name:** `product_catalogue`
 * **Primary Collection:** `products`
 * **Object Data Modeling (ODM):** Mongoose 8.x
 * **Storage Engine:** WiredTiger Document Storage Engine

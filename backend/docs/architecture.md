@@ -47,7 +47,7 @@ flowchart TD
         SecondaryReplica1["Secondary Node 1 (Replication / High Availability)"]
         SecondaryReplica2["Secondary Node 2 (Replication / Automatic Failover)"]
         
-        subgraph Database["Database: product_catalogue_db"]
+        subgraph Database["Database: product_catalogue"]
             Collection["Collection: products (BSON Document Store)"]
             Indexes["Indexes: productId (unique), text (name, brand, category)"]
         end

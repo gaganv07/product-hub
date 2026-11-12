@@ -26,7 +26,7 @@
 > 3. The cloud database is **MongoDB Atlas**, hosted on a managed cloud cluster.
 > 4. The server runs on an **AWS EC2 Ubuntu Linux VM** managed by **PM2** for zero downtime and reverse-proxied by **Nginx**.
 > 
-> As you can see at the top of our screen, the database status banner indicates **'Online & Connected'**. When we click the **Database Health** button, it shows live stats directly from the MongoDB connection: database name `product_catalogue_db`, host cluster address, Node.js runtime version, and memory usage."
+> As you can see at the top of our screen, the database status banner indicates **'Online & Connected'**. When we click the **Database Health** button, it shows live stats directly from the MongoDB connection: database name `product_catalogue`, host cluster address, Node.js runtime version, and memory usage."
 
 ---
 

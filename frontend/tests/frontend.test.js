@@ -51,16 +51,17 @@ describe('ProductHub Frontend Integrity & Configuration Tests', () => {
   });
 
   // 3. Configuration Module Validation
-  it('TC-F03: config.js must define CONFIG with documented API_BASE_URL placeholder', () => {
+  it('TC-F03: config.js must configure local dev API_BASE_URL and non-localhost production support', () => {
     const configPath = path.join(FRONTEND_ROOT, 'js', 'config.js');
     const configContent = fs.readFileSync(configPath, 'utf-8');
 
     // Test CommonJS export
     const CONFIG = require(configPath);
     assert.ok(CONFIG, 'CONFIG object must be defined');
-    assert.equal(CONFIG.API_BASE_URL, 'BACKEND_API_PLACEHOLDER', 'Default API_BASE_URL must be BACKEND_API_PLACEHOLDER');
-    assert.ok(configContent.includes('BACKEND_API_PLACEHOLDER'), 'config.js must document the placeholder');
-    assert.ok(!configContent.includes('http://localhost:5000" as production'), 'Must not hardcode localhost as production address');
+    assert.equal(CONFIG.API_BASE_URL, 'http://localhost:5000', 'Local dev API_BASE_URL must be http://localhost:5000');
+    assert.equal(CONFIG.PRODUCTION_API_BASE_URL, '', 'Production API_BASE_URL must not hardcode localhost');
+    assert.ok(configContent.includes('PRODUCTHUB_CONFIG'), 'Must preserve window.PRODUCTHUB_CONFIG runtime override');
+    assert.ok(configContent.includes('PRODUCTHUB_API_URL'), 'Must preserve localStorage runtime override');
   });
 
   // 4. Client JS API Routing Validation

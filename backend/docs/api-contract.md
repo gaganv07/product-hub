@@ -365,7 +365,7 @@ Every product document stored in MongoDB Atlas and exchanged between backend and
   "database": {
     "status": "Connected",
     "host": "cluster0-shard-00-00.abcde.mongodb.net",
-    "name": "product_catalogue_db",
+    "name": "product_catalogue",
     "isAtlas": true,
     "provider": "MongoDB Atlas (Cloud Cluster)"
   },

@@ -1,3 +1,4 @@
+const dns = require('dns');
 const mongoose = require('mongoose');
 
 // Mask credentials in connection string for safe server logging
@@ -10,9 +11,44 @@ const maskUri = (uri) => {
   }
 };
 
+// Configure DNS resolver fallback when Node.js c-ares defaults to loopback only (common on Windows)
+const ensureSrvDnsResolution = (uri) => {
+  if (!uri || !uri.startsWith('mongodb+srv://')) return;
+  try {
+    const currentServers = dns.getServers();
+    const onlyLoopback = currentServers.length > 0 && currentServers.every(
+      (s) => s === '127.0.0.1' || s === '::1'
+    );
+    if (onlyLoopback) {
+      dns.setServers(['8.8.8.8', '1.1.1.1']);
+      console.log('🌐 Configured DNS SRV fallback resolvers (8.8.8.8, 1.1.1.1) for MongoDB Atlas.');
+    }
+  } catch (err) {
+    console.warn('⚠️ Unable to inspect/update DNS servers:', err.message);
+  }
+};
+
+let listenersRegistered = false;
+const registerConnectionEvents = () => {
+  if (listenersRegistered) return;
+  listenersRegistered = true;
+
+  mongoose.connection.on('connected', () => {
+    console.log('🟢 Mongoose event: connected to MongoDB Atlas (product_catalogue)');
+  });
+
+  mongoose.connection.on('error', (err) => {
+    console.error('🔴 Mongoose event: connection error:', err.message);
+  });
+
+  mongoose.connection.on('disconnected', () => {
+    console.warn('🟡 Mongoose event: disconnected from MongoDB Atlas');
+  });
+};
+
 /**
  * Connect to dedicated ProductHub MongoDB Atlas Cluster
- * Database: product_catalogue_db
+ * Database: product_catalogue
  */
 const connectDB = async () => {
   const uri = process.env.MONGODB_URI;
@@ -30,11 +66,14 @@ const connectDB = async () => {
     return false;
   }
 
+  registerConnectionEvents();
+  ensureSrvDnsResolution(uri);
+
   try {
-    console.log(`📡 Connecting to MongoDB Atlas: ${maskUri(uri)} (Database: product_catalogue_db)...`);
+    console.log(`📡 Connecting to MongoDB Atlas: ${maskUri(uri)} (Database: product_catalogue)...`);
 
     const conn = await mongoose.connect(uri, {
-      dbName: 'product_catalogue_db', // Explicitly enforce dedicated ProductHub database
+      dbName: 'product_catalogue', // Explicitly enforce dedicated ProductHub database
       serverSelectionTimeoutMS: 5000,
       autoIndex: true
     });
@@ -44,6 +83,20 @@ const connectDB = async () => {
     return conn;
   } catch (error) {
     console.error(`❌ MongoDB Atlas Connection Failed: ${error.message}`);
+
+    // Inspect underlying shard TLS/network errors for clearer diagnosis
+    if (error.reason && error.reason.servers) {
+      for (const [addr, desc] of error.reason.servers) {
+        if (desc && desc.error && desc.error.message) {
+          console.error(`   ↳ Shard ${addr}: ${desc.error.message}`);
+          if (desc.error.message.includes('SSL alert number 80') || desc.error.message.includes('tlsv1 alert internal error')) {
+            console.error('   👉 Diagnosis: TLS Alert 80 indicates the client public IP address is NOT whitelisted in MongoDB Atlas Network Access.');
+          }
+          break;
+        }
+      }
+    }
+
     console.error('👉 Please verify your MongoDB Atlas cluster URI, username, password, and IP whitelist in Atlas Network Access.');
     return false;
   }

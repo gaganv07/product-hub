@@ -110,7 +110,7 @@ ProductHub follows a 3-tier architectural model:
          │ (TLS 1.3 Encrypted Mongoose Connection)
          ▼
 [ MongoDB Atlas Cloud Cluster ]
-   └─ Database: product_catalogue_db (Collection: products)
+   └─ Database: product_catalogue (Collection: products)
 ```
 
 ### Architectural Highlights:
@@ -123,7 +123,7 @@ ProductHub follows a 3-tier architectural model:
 ## 7. MONGODB DOCUMENT DATABASE DESIGN
 
 ### 7.1. Database & Collection Parameters
-* **Database Name:** `product_catalogue_db`
+* **Database Name:** `product_catalogue`
 * **Collection Name:** `products`
 
 ### 7.2. Document Schema Structure
@@ -209,7 +209,7 @@ A thorough automated test suite and live HTTP auditor were constructed using the
 * **BUG-01 (Regex Injection Prevention):** User search strings with special regex characters (e.g. parentheses or plus signs) are automatically sanitized using `escapeRegex()`, preventing regular expression compilation crashes.
 * **BUG-02 (Pagination Sanitization):** Non-numeric query parameters (`page=abc`) are safely defaulted to valid integers, avoiding `NaN` database query errors.
 * **BUG-03 (Strict Validation):** Product creation and updates enforce non-negative prices and strict SKU formatting (`/^[A-Za-z0-9_-]+$/`), returning HTTP 400 Bad Request.
-* **BUG-04 (Atlas Database Enforcement & Fail-Safe Handling):** Strict enforcement of the dedicated MongoDB Atlas database (`product_catalogue_db`). Connection attempts fail safely without data leakage; clear HTTP 503 Service Unavailable responses and masked server logs are provided when Atlas is unreachable.
+* **BUG-04 (Atlas Database Enforcement & Fail-Safe Handling):** Strict enforcement of the dedicated MongoDB Atlas database (`product_catalogue`). Connection attempts fail safely without data leakage; clear HTTP 503 Service Unavailable responses and masked server logs are provided when Atlas is unreachable.
 
 ### 11.2. Automated Test Results Summary:
 * **TC-00 (Health Check):** Confirmed application health and connected database state (HTTP 200).

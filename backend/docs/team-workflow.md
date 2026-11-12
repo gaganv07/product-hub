@@ -246,9 +246,9 @@ ProductHub strictly separates its database environments:
 
 | Environment | Database Engine | Database Name | Purpose |
 | :--- | :--- | :--- | :--- |
-| **Development** | MongoDB Atlas Cloud Cluster | `product_catalogue_db` | Live cloud database connection configured via server-side `.env`. |
+| **Development** | MongoDB Atlas Cloud Cluster | `product_catalogue` | Live cloud database connection configured via server-side `.env`. |
 | **Automated Testing** | Isolated Test MongoDB | `product_catalogue_test` | Ephemeral test sandbox created and destroyed during `npm test`. |
-| **Production Cloud** | MongoDB Atlas Cloud Cluster | `product_catalogue_db` | Multi-AZ cloud cluster used when deployed on AWS EC2. Strictly required in production mode. |
+| **Production Cloud** | MongoDB Atlas Cloud Cluster | `product_catalogue` | Multi-AZ cloud cluster used when deployed on AWS EC2. Strictly required in production mode. |
 
 ### Verifying MongoDB Atlas Cloud Connection
 To prove your application is connected to MongoDB Atlas (without exposing passwords):
@@ -264,7 +264,7 @@ npm run verify:db
 ====================================================
 
 📌 Environment Mode:    development
-📌 Configured URI:      mongodb+srv://student_admin:********@cluster0.abcde.mongodb.net/product_catalogue_db?retryWrites=true&w=majority
+📌 Configured URI:      mongodb+srv://student_admin:********@cluster0.abcde.mongodb.net/product_catalogue?retryWrites=true&w=majority
 
 📡 Attempting secure TLS/SSL handshake with MongoDB Atlas...
 ✅ MongoDB Atlas Connection Verified successfully in 184ms!
@@ -273,7 +273,7 @@ npm run verify:db
 📊 ATLAS CLUSTER DIAGNOSTIC SUMMARY:
 ----------------------------------------------------
    Cluster Host:       cluster0-shard-00-00.abcde.mongodb.net
-   Database Name:      product_catalogue_db
+   Database Name:      product_catalogue
    MongoDB Version:    v7.0.14
    Network Latency:    184ms
    Collections in DB:  products

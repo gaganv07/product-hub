@@ -56,6 +56,19 @@ const server = http.createServer((req, res) => {
   });
 });
 
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n❌ STARTUP ERROR: Port ${PORT} is already in use.`);
+    console.error(`👉 If the ProductHub frontend server is already running, open http://localhost:${PORT}`);
+    console.error(`👉 To stop the existing process on Windows PowerShell:`);
+    console.error(`   Stop-Process -Id (Get-NetTCPConnection -LocalPort ${PORT} -State Listen).OwningProcess -Force`);
+    console.error(`👉 Or run on another port: $env:PORT="3001"; npm start\n`);
+    process.exit(1);
+  }
+  console.error('❌ Frontend server error:', err.message);
+  process.exit(1);
+});
+
 server.listen(PORT, () => {
   console.log('====================================================');
   console.log(`🚀 ProductHub Frontend Preview Server`);

@@ -5,12 +5,11 @@
 
 // Helper to resolve the backend API endpoint using CONFIG.API_BASE_URL
 function getApiUrl(endpoint) {
-  const base = (typeof CONFIG !== 'undefined' && CONFIG && CONFIG.API_BASE_URL)
+  const base = (typeof CONFIG !== 'undefined' && CONFIG && typeof CONFIG.API_BASE_URL === 'string')
     ? CONFIG.API_BASE_URL.trim()
     : '';
 
-  // If unconfigured placeholder, fallback to relative path
-  if (!base || base === 'BACKEND_API_PLACEHOLDER') {
+  if (!base) {
     return endpoint;
   }
 
@@ -116,8 +115,6 @@ async function checkSystemHealth(isUserTriggered = false) {
   const bannerDetails = document.getElementById('banner-db-details');
   const healthDbStatus = document.getElementById('health-db-status');
 
-  const isPlaceholder = (typeof CONFIG !== 'undefined' && CONFIG && CONFIG.API_BASE_URL === 'BACKEND_API_PLACEHOLDER');
-
   try {
     const res = await fetch(getApiUrl('/api/health'));
     const data = await res.json();
@@ -133,7 +130,7 @@ async function checkSystemHealth(isUserTriggered = false) {
         bannerStatus.innerText = 'Connected';
       }
       if (bannerDetails) {
-        bannerDetails.innerHTML = 'Database: <strong class="text-dark font-monospace">product_catalogue_db</strong> | Document Collection: <strong class="text-dark">products</strong>';
+        bannerDetails.innerHTML = 'Database: <strong class="text-dark font-monospace">product_catalogue</strong> | Document Collection: <strong class="text-dark">products</strong>';
       }
       if (healthDbStatus) {
         healthDbStatus.innerHTML = '<span class="badge bg-success">Connected</span>';
@@ -161,9 +158,7 @@ async function checkSystemHealth(isUserTriggered = false) {
         bannerStatus.innerText = 'Disconnected';
       }
       if (bannerDetails) {
-        bannerDetails.innerHTML = isPlaceholder
-          ? '<span class="text-warning"><i class="bi bi-info-circle me-1"></i>Backend API URL set to <code>BACKEND_API_PLACEHOLDER</code>. Configure <code>API_BASE_URL</code> in <code>js/config.js</code> once backend is deployed.</span>'
-          : '<span class="text-danger">Database connection unavailable. Please check MongoDB Atlas network access.</span>';
+        bannerDetails.innerHTML = '<span class="text-danger">Database connection unavailable. Please verify MongoDB Atlas network access and cluster status.</span>';
       }
       if (healthDbStatus) {
         healthDbStatus.innerHTML = '<span class="badge bg-danger">Disconnected</span>';
@@ -179,7 +174,7 @@ async function checkSystemHealth(isUserTriggered = false) {
       healthStatus.innerText = dbStatus === 'Connected' ? 'Healthy' : 'Database Unavailable';
     }
     const healthDbName = document.getElementById('health-db-name');
-    if (healthDbName) healthDbName.innerText = data.database?.name || 'product_catalogue_db';
+    if (healthDbName) healthDbName.innerText = data.database?.name || 'product_catalogue';
     const healthNode = document.getElementById('health-node-version');
     if (healthNode) healthNode.innerText = data.system?.nodeVersion || 'N/A';
     const healthPlatform = document.getElementById('health-platform');
@@ -201,12 +196,13 @@ async function checkSystemHealth(isUserTriggered = false) {
       bannerStatus.innerText = 'Disconnected';
     }
     if (bannerDetails) {
-      bannerDetails.innerHTML = isPlaceholder
-        ? '<span class="text-warning"><i class="bi bi-info-circle me-1"></i>Backend API URL set to <code>BACKEND_API_PLACEHOLDER</code>. Configure <code>API_BASE_URL</code> in <code>js/config.js</code> once backend is deployed.</span>'
-        : '<span class="text-danger">Backend server is unreachable. Check network connection or API URL.</span>';
+      bannerDetails.innerHTML = '<span class="text-danger">Unable to reach the backend API server. Ensure the Express backend is running and reachable.</span>';
     }
     if (healthDbStatus) {
       healthDbStatus.innerHTML = '<span class="badge bg-danger">Disconnected</span>';
+    }
+    if (isUserTriggered) {
+      showToast('Unable to reach backend API server.', 'danger');
     }
   }
 }
@@ -330,6 +326,20 @@ async function fetchDashboardStats() {
     });
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
+    const catContainer = document.getElementById('category-distribution-container');
+    if (catContainer) {
+      catContainer.innerHTML = '<span class="text-danger small">Unable to load categories (backend unreachable)</span>';
+    }
+    const tbody = document.getElementById('recent-products-tbody');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-4 text-danger">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Unable to connect to backend API server. Please ensure the backend is running.
+          </td>
+        </tr>
+      `;
+    }
   }
 }
 

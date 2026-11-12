@@ -62,7 +62,7 @@ Before launching the EC2 instance, configure network access and security in Mong
 2. Select **Drivers** (Node.js).
 3. Copy the standard SRV connection string:
    ```text
-   mongodb+srv://producthub_admin:<password>@cluster0.abcde.mongodb.net/product_catalogue_db?retryWrites=true&w=majority
+   mongodb+srv://producthub_admin:<password>@cluster0.abcde.mongodb.net/product_catalogue?retryWrites=true&w=majority
    ```
 
 ---
@@ -145,7 +145,7 @@ PORT=5000
 NODE_ENV=production
 
 # MongoDB Atlas Cluster URI (Replace with your actual Atlas credentials)
-MONGODB_URI=mongodb+srv://producthub_admin:YourRealPassword123@cluster0.abcde.mongodb.net/product_catalogue_db?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://producthub_admin:YourRealPassword123@cluster0.abcde.mongodb.net/product_catalogue?retryWrites=true&w=majority
 ```
 *(Press `Ctrl + O`, `Enter` to write changes, and `Ctrl + X` to exit nano)*.
 
@@ -164,7 +164,7 @@ npm run seed
 🌱 Starting ProductHub database seeding process...
 📡 Connecting to MongoDB Atlas cluster...
 ✅ MongoDB Atlas Connected: cluster0-shard-00-00.abcde.mongodb.net
-📁 Database Name: product_catalogue_db
+📁 Database Name: product_catalogue
 📦 Loaded 12 sample products from sample-products.json
 ➕ Added new product: [P1001] Dell Inspiron 15 3520
 ...
