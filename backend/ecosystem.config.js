@@ -8,7 +8,7 @@ module.exports = {
     {
       name: 'producthub',
       script: 'server.js',
-      cwd: '/home/ubuntu/ProductHub',
+      cwd: __dirname,
       instances: 1, // Single instance for t2.micro / t3.small; set to 'max' for multi-core instances
       autorestart: true,
       watch: false, // Do not watch files in production

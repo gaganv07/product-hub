@@ -93,12 +93,10 @@ product-hub/
 
 ## 4. Running the Frontend (`frontend/`)
 
-1. **Configure the Backend API URL:**
-   Open `frontend/js/config.js` and update `API_BASE_URL` from `'BACKEND_API_PLACEHOLDER'` to your backend URL:
-   ```javascript
-   API_BASE_URL: 'http://localhost:5000' // https://producthub-api-da3l.onrender.com
-   ```
-   *(The production frontend already uses the Render API URL configured in `frontend/js/config.js`.)*
+1. **Frontend Configuration & Architecture:**
+   * **Local Development (`localhost`):** Automatically targets `http://localhost:5000`.
+   * **Production (`https://producthub-frontend-two.vercel.app`):** Uses same-origin relative requests (`''`) proxied via `frontend/vercel.json` (`/api/:path*` ➔ `http://3.108.53.179/api/:path*`), completely preventing browser Mixed Content blocking.
+   * **Runtime Overrides:** Can be overridden dynamically via `window.PRODUCTHUB_CONFIG.API_BASE_URL` or `localStorage.getItem('PRODUCTHUB_API_URL')`.
 
 2. **Start the frontend preview server:**
    ```bash
@@ -128,22 +126,44 @@ product-hub/
 | `PUT` | `/api/products/:id` | Update an existing product document |
 | `DELETE` | `/api/products/:id` | Delete a product document |
 
+---
 
+## 6. Production Deployment Architecture
 
-## 6. Current Production Deployment
+ProductHub is deployed across a multi-tier cloud infrastructure utilizing **Vercel** for static frontend hosting, an **AWS EC2** Ubuntu virtual machine for the backend application server, and **MongoDB Atlas** for cloud database storage.
 
-The currently running production architecture is **Vercel + Render + MongoDB Atlas**. AWS EC2 has not been provisioned.
+| Component | Production Service | URL / Host Details | Description |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | Vercel | https://producthub-frontend-two.vercel.app | Static Single-Page App proxied to EC2 |
+| **Backend API** | AWS EC2 (Ubuntu 24.04 LTS) | http://3.108.53.179 | Express.js REST API on port 5000 (PM2 + Nginx) |
+| **API Health Check** | AWS EC2 / Nginx | http://3.108.53.179/api/health | Returns system uptime, process health, and DB status |
+| **Database Tier** | MongoDB Atlas | `producthubcluster.khsf2oa.mongodb.net` | Dedicated cloud cluster running MongoDB 7.0 |
+| **Database Collection** | MongoDB Atlas | `product_catalogue.products` | 12 verified sample product documents |
 
-| Component | Production service | URL / details |
-|---|---|---|
-| Frontend | Vercel | https://producthub-frontend-two.vercel.app |
-| Express API | Render | https://producthub-api-da3l.onrender.com |
-| API health | Render | https://producthub-api-da3l.onrender.com/api/health |
-| Database | MongoDB Atlas | `ProductHub-Production` / `ProductHubCluster` |
-| Database collection | MongoDB Atlas | `product_catalogue.products` (12 sample products) |
+### AWS EC2 & Ubuntu VM Configuration
+* **Instance Host / Public IP:** `3.108.53.179`
+* **Operating System:** Ubuntu 24.04 LTS (x86_64)
+* **Node.js Runtime:** `v22.23.5` (npm `10.9.9`)
+* **Process Manager:** PM2 (managed via systemd service `pm2-ubuntu`, auto-restart enabled)
+* **Reverse Proxy:** Nginx 1.24 (forwarding incoming port 80 requests to internal port 5000)
+* **Vercel Proxy Rewrites:** `frontend/vercel.json` rewrites `/api/:path*` to `http://3.108.53.179/api/:path*` to eliminate browser Mixed Content restrictions.
 
-The health endpoint has returned a healthy API status and a connected database. The deployed dashboard and catalogue have displayed all 12 products. Browser verification has covered catalogue reads and successful create, update, and delete actions.
+### PM2 Process Management Commands on EC2:
+```bash
+# Check process status
+pm2 status
 
-Detailed deployment steps are in [backend/docs/deployment-guide.md](backend/docs/deployment-guide.md). The architecture and current EC2 limitation are documented in [backend/docs/architecture.md](backend/docs/architecture.md).
+# View live application logs (masked credentials)
+pm2 logs producthub
 
-**Assignment caveat:** If the faculty rubric explicitly requires an IaaS virtual machine such as AWS EC2, that requirement is still pending. The existing Render deployment is managed application hosting and must not be represented as an EC2 VM.
+# Restart application
+pm2 restart producthub
+
+# Save running process list for reboot survival
+pm2 save
+```
+
+### Inbound Security Group Requirements:
+* **Port 22 (SSH):** Administrator remote access
+* **Port 80 (HTTP):** Inbound web traffic proxied via Nginx to backend port 5000
+* **Port 443 (HTTPS):** Inbound encrypted web traffic

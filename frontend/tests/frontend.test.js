@@ -59,7 +59,8 @@ describe('ProductHub Frontend Integrity & Configuration Tests', () => {
     const CONFIG = require(configPath);
     assert.ok(CONFIG, 'CONFIG object must be defined');
     assert.equal(CONFIG.API_BASE_URL, 'http://localhost:5000', 'Local dev API_BASE_URL must be http://localhost:5000');
-    assert.equal(CONFIG.PRODUCTION_API_BASE_URL, '', 'Production API_BASE_URL must not hardcode localhost');
+    assert.equal(CONFIG.PRODUCTION_API_BASE_URL, '', 'Production API_BASE_URL must be empty string for same-origin Vercel rewrites');
+    assert.notEqual(CONFIG.PRODUCTION_API_BASE_URL, 'http://localhost:5000', 'Production API_BASE_URL must not hardcode localhost');
     assert.ok(configContent.includes('PRODUCTHUB_CONFIG'), 'Must preserve window.PRODUCTHUB_CONFIG runtime override');
     assert.ok(configContent.includes('PRODUCTHUB_API_URL'), 'Must preserve localStorage runtime override');
   });
@@ -171,6 +172,19 @@ describe('ProductHub Frontend Integrity & Configuration Tests', () => {
         assert.ok(!match, `Found prohibited AI branding "${match ? match[0] : ''}" in ${file}`);
       }
     }
+  });
+
+  // 9. Vercel Proxy Rewrite Configuration
+  it('TC-F09: vercel.json must proxy /api/:path* to EC2 backend to prevent mixed-content', () => {
+    const vercelConfigPath = path.join(FRONTEND_ROOT, 'vercel.json');
+    assert.ok(fs.existsSync(vercelConfigPath), 'vercel.json must exist in frontend root');
+
+    const vercelContent = JSON.parse(fs.readFileSync(vercelConfigPath, 'utf-8'));
+    assert.ok(Array.isArray(vercelContent.rewrites), 'rewrites array must be defined');
+
+    const apiRewrite = vercelContent.rewrites.find(r => r.source === '/api/:path*');
+    assert.ok(apiRewrite, 'Rewrite rule for /api/:path* must be configured');
+    assert.equal(apiRewrite.destination, 'http://3.108.53.179/api/:path*', 'Rewrite destination must target EC2 backend');
   });
 });
 
