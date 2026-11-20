@@ -98,27 +98,30 @@ The core objectives of the ProductHub project are:
 
 ## 6. SYSTEM ARCHITECTURE
 
-ProductHub follows a 3-tier architectural model:
+ProductHub uses a three-tier, decoupled architecture. The production frontend is hosted by Vercel, the REST API is hosted as a Node.js web service on Render, and persistent product documents are stored in MongoDB Atlas.
 
 ```
-[ Web Browser (Client) ]
-         │ (HTTP / HTTPS REST Requests)
-         ▼
-[ AWS EC2 Virtual Machine ]
-   ├─ Nginx Reverse Proxy (Port 80)
-   └─ Node.js + Express Server (Port 5000, Managed by PM2)
-         │ (TLS 1.3 Encrypted Mongoose Connection)
-         ▼
-[ MongoDB Atlas Cloud Cluster ]
-   └─ Database: product_catalogue (Collection: products)
+[User Browser]
+      |
+      | HTTPS
+      v
+[Vercel: Static HTML / CSS / Bootstrap / Vanilla JS]
+      |
+      | HTTPS REST requests to Render
+      v
+[Render: Node.js + Express REST API]
+      |
+      | Mongoose / MongoDB SRV connection over TLS
+      v
+[MongoDB Atlas: ProductHubCluster]
+      |
+      v
+[product_catalogue.products]
 ```
 
-### Architectural Highlights:
-1. **Client Tier:** The single-page application interface interacts with backend endpoints asynchronously using the browser `fetch()` API. Live preview listeners update UI cards in real time as administrators input product details.
-2. **Application Tier:** Express middleware intercepts requests for CORS, JSON body parsing, and request logging. Controllers encapsulate business logic and interact with Mongoose models.
-3. **Data Tier:** MongoDB Atlas stores documents in binary BSON format on WiredTiger storage. Replica set nodes guarantee high availability, and compound text indexes support rapid text searching.
+The frontend reads the production API origin from `frontend/js/config.js`. Express exposes product CRUD, search, dashboard statistics, and health endpoints. Mongoose validates and persists product documents in Atlas. The deployed health endpoint reports a healthy API and a connected `product_catalogue` database.
 
----
+**Deployment distinction:** AWS EC2 was not provisioned because AWS account registration remained incomplete. The running implementation uses Render for the backend and Vercel for the frontend. Do not describe the current deployment as EC2-hosted. If the course rubric explicitly requires a virtual machine, EC2 deployment remains a separate outstanding requirement.
 
 ## 7. MONGODB DOCUMENT DATABASE DESIGN
 
@@ -189,49 +192,66 @@ The application exposes the following RESTful API endpoints:
 
 ---
 
-## 10. CLOUD DEPLOYMENT (AWS EC2 & MONGODB ATLAS)
+## 10. CLOUD DEPLOYMENT (VERCEL, RENDER & MONGODB ATLAS)
 
-ProductHub is architected for cloud hosting on **AWS EC2**:
+The deployed ProductHub application uses three cloud services:
 
-1. **Virtual Machine Provisioning:** An EC2 `t2.micro` instance running **Ubuntu 22.04 LTS** was provisioned with inbound security group rules allowing ports 22 (SSH), 80 (HTTP), 443 (HTTPS), and 5000 (direct app access).
-2. **Environment Configuration:** Node.js (v22 LTS), npm, and Git were installed via the official NodeSource repository.
-3. **MongoDB Atlas Whitelisting:** The EC2 public IP was whitelisted in MongoDB Atlas Network Access, and database user credentials with read/write privileges were generated.
-4. **Process Management with PM2:** The application was placed under **PM2** supervision to provide automatic restarts upon system reboots or runtime faults.
-5. **Reverse Proxy with Nginx:** Nginx was configured on port 80 to reverse proxy incoming HTTP traffic to `http://localhost:5000`, securing internal ports and preparing the system for SSL termination.
+1. **Frontend – Vercel:** The static frontend is deployed from the GitHub repository `gaganv07/product-hub`, using `frontend` as the project root. Production URL: https://producthub-frontend-two.vercel.app
+2. **Backend – Render:** The Express API is deployed as the Render web service `producthub-api`. Production URL: https://producthub-api-da3l.onrender.com. The service runs on Render's assigned port (observed as `10000`) and uses production environment variables configured in the Render dashboard.
+3. **Database – MongoDB Atlas:** The Atlas project `ProductHub-Production` contains the active cluster `ProductHubCluster`. The application database is `product_catalogue` and the collection is `products`.
 
----
+### 10.1 Production Verification
+
+The following production checks were observed during deployment:
+- The Render root endpoint returned the ProductHub Backend REST API running message.
+- `GET /api/health` returned `success: true`, `status: Healthy`, and database status `Connected` for `product_catalogue`.
+- The Vercel dashboard displayed 12 products, 10 active brands, and 5 categories.
+- The catalogue displayed all 12 products.
+- Frontend notifications confirmed successful update, delete, and re-add operations. The deleted Logitech sample product was restored and its description, image, and nested processor specification were corrected in Atlas.
+- Atlas was queried after correction and the collection count was verified as 12.
+
+### 10.2 EC2 Requirement Status
+
+An AWS EC2 instance was **not created**. AWS account registration was not completed, so no EC2 public IP, SSH configuration, Ubuntu VM, Nginx, or PM2 deployment exists. The current Vercel + Render deployment is operational, but it does not satisfy a strict assignment requirement for an IaaS virtual machine. Confirm with the faculty whether managed cloud hosting is acceptable. If EC2 is mandatory, provision an Ubuntu instance and deploy the backend there before claiming that requirement is complete.
+
+### 10.3 Production URLs
+
+- Frontend: https://producthub-frontend-two.vercel.app
+- Backend root: https://producthub-api-da3l.onrender.com
+- Backend health: https://producthub-api-da3l.onrender.com/api/health
 
 ## 11. SOFTWARE TESTING & RESULTS
 
-A thorough automated test suite and live HTTP auditor were constructed using the Node.js native test runner and Supertest. All **17 automated unit/integration tests** and all **18 live end-to-end audit tests** passed with a **100% success rate**.
+Testing was performed at multiple levels. Earlier project verification recorded 17 passing backend automated tests and 8 passing frontend tests. A prior live API CRUD verification also exercised create, retrieve, search, dashboard statistics, update, delete, and not-found behavior. The production deployment was subsequently checked through the public Render health endpoint and the Vercel interface.
 
-### 11.1. Technical Audit & Defect Remediation:
-* **BUG-01 (Regex Injection Prevention):** User search strings with special regex characters (e.g. parentheses or plus signs) are automatically sanitized using `escapeRegex()`, preventing regular expression compilation crashes.
-* **BUG-02 (Pagination Sanitization):** Non-numeric query parameters (`page=abc`) are safely defaulted to valid integers, avoiding `NaN` database query errors.
-* **BUG-03 (Strict Validation):** Product creation and updates enforce non-negative prices and strict SKU formatting (`/^[A-Za-z0-9_-]+$/`), returning HTTP 400 Bad Request.
-* **BUG-04 (Atlas Database Enforcement & Fail-Safe Handling):** Strict enforcement of the dedicated MongoDB Atlas database (`product_catalogue`). Connection attempts fail safely without data leakage; clear HTTP 503 Service Unavailable responses and masked server logs are provided when Atlas is unreachable.
+### 11.1 Production Test Evidence
 
-### 11.2. Automated Test Results Summary:
-* **TC-00 (Health Check):** Confirmed application health and connected database state (HTTP 200).
-* **TC-01 (Add Valid Product):** Confirmed document creation with nested specifications (HTTP 201).
-* **TC-02 (Missing Fields):** Confirmed rejection of invalid payloads missing required attributes (HTTP 400).
-* **TC-03 (Duplicate Prevention):** Confirmed rejection of duplicate product IDs with HTTP 409 Conflict.
-* **TC-04 (Retrieve Catalogue):** Confirmed retrieval of all documents with pagination metadata (HTTP 200).
-* **TC-05 to TC-07 (Search Operations):** Verified keyword search across name, brand, and product ID.
-* **TC-08 to TC-09 (Update Operations):** Verified updates to existing records and 404 error handling for non-existent records.
-* **TC-10 to TC-11 (Delete Operations):** Verified permanent deletion from MongoDB and 404 error handling.
-* **TC-12 (Aggregation Pipeline):** Verified mathematical calculation of average prices and category distributions.
-* **TC-13 (Special Regex Search):** Verified query sanitization on regex special characters.
-* **TC-14 to TC-15 (Input Constraints):** Verified rejection of negative prices and malformed product identifiers.
-* **TC-16 (Pagination Defense):** Verified graceful fallback when non-numeric pagination arguments are passed.
+| Test | Evidence / observed result |
+|---|---|
+| API root | Render returned the ProductHub API running response |
+| Database health | `/api/health` returned Healthy and Connected to `product_catalogue` |
+| Catalogue read | Frontend displayed 12 of 12 product documents |
+| Dashboard aggregation | 12 products, 10 brands, 5 categories; average price displayed as ₹65,381 |
+| Update | Frontend success notification confirmed a product update |
+| Delete | Frontend success notification and catalogue count decrease from 12 to 11 |
+| Restore/create | Frontend success notification; count returned to 12 |
+| Data correction | Atlas record `P1009` corrected; frontend showed restored description and image |
 
----
+The screenshots supplied during verification are the primary evidence for the browser-visible production tests. The live browser tests were performed against the deployed application; they should not be represented as a new automated test-suite run.
+
+### 11.2 Previously Recorded Automated Tests
+
+The repository's prior verification report recorded 17 passing backend tests and 8 passing frontend tests. Re-run `npm test` in the backend and the frontend test command from the repository before final submission, then attach fresh terminal output. Do not claim a fresh run based only on earlier results.
+
+### 11.3 Validation and Error Handling
+
+The backend includes product validation, duplicate product ID handling, search input sanitization, pagination input normalization, and database connection failure handling. Confirm the current test run before submission and include only results that can be reproduced.
 
 ## 12. CONCLUSION
 
 The **ProductHub** project successfully demonstrates the implementation, cloud deployment, and practical utility of a document-oriented database for an online retail product catalogue. By utilizing **MongoDB Atlas**, the system achieves dynamic schema adaptability, enabling heterogeneous hardware and appliance specifications to be stored naturally as embedded BSON subdocuments.
 
-The full-stack application developed with Node.js, Express.js, and Bootstrap 5 provides a modern administrative interface coupled with robust RESTful APIs. Automated test executions validated every mandatory CRUD operation, and the AWS EC2 production deployment architecture provides high availability, fault tolerance, and cloud scalability.
+The full-stack application developed with HTML, CSS, Bootstrap, Vanilla JavaScript, Node.js, Express.js, and MongoDB Atlas provides a deployed administrative interface and REST API. Production hosting currently uses Vercel and Render. Browser-based production checks confirmed catalogue reads and successful create, update, and delete flows, with the sample dataset restored to 12 products. AWS EC2 deployment has not been completed and must not be claimed as part of the current deployment.
 
 ---
 
