@@ -29,7 +29,7 @@ Faculty of Computer Science & Information Technology
 7. [MongoDB Document Database Design](#7-mongodb-document-database-design)
 8. [Application Implementation](#8-application-implementation)
 9. [CRUD Functionality & API Specification](#9-crud-functionality--api-specification)
-10. [Cloud Deployment (AWS EC2 & MongoDB Atlas)](#10-cloud-deployment-aws-ec2--mongodb-atlas)
+10. [Cloud Deployment (Vercel, Render & MongoDB Atlas)](#10-cloud-deployment-vercel-render--mongodb-atlas)
 11. [Software Testing & Results](#11-software-testing--results)
 12. [Conclusion](#12-conclusion)
 13. [Future Enhancements](#13-future-enhancements)
@@ -74,27 +74,25 @@ The core objectives of the ProductHub project are:
 1. **Develop a Full-Stack Product Catalogue System:** Build a robust, modular web application featuring an administrative dashboard, responsive product grid, and interactive management forms.
 2. **Leverage Document-Oriented Storage (MongoDB Atlas):** Design and implement a Mongoose schema utilizing embedded subdocuments to represent complex hardware specifications.
 3. **Implement Complete RESTful CRUD APIs:** Build Express controllers supporting product creation, retrieval with pagination and multi-attribute regex search, document updates, and safe deletions.
-4. **Deploy to AWS Cloud Infrastructure:** Configure an AWS EC2 Ubuntu Linux VM with Nginx reverse proxy and PM2 process management connected securely to MongoDB Atlas over TLS/SSL.
+4. **Deploy to Cloud Infrastructure:** Deploy the static frontend to Vercel, the Express API to Render, and connect the API securely to MongoDB Atlas over TLS/SSL.
 5. **Execute Automated Quality Verification:** Develop and run automated unit and integration tests covering all positive, negative, and duplicate validation scenarios.
 
 ---
 
 ## 5. TECHNOLOGY STACK
 
-| Component | Technology | Version | Justification |
-| :--- | :--- | :--- | :--- |
-| **Frontend Framework** | HTML5, CSS3, Bootstrap | 5.3.3 | Provides responsive mobile-first UI components, modal dialogues, and clean aesthetic. |
-| **Client Scripting** | Vanilla JavaScript (ES6+) | Modern | Eliminates heavy framework dependencies; provides fast reactive previews and DOM manipulation. |
-| **Backend Runtime** | Node.js | v20 / v22 / v24 | High-throughput asynchronous event-driven JavaScript engine ideal for I/O-intensive APIs. |
-| **Web Framework** | Express.js | 4.21.x | Lightweight, unopinionated routing and middleware architecture for RESTful services. |
-| **Database** | MongoDB Atlas | 7.x / 8.x | Managed cloud NoSQL document database offering automated failover, replication, and sharding. |
-| **Object Data Modeling**| Mongoose | 8.9.x | Enforces schema validation, type casting, default values, and query middleware. |
-| **Process Manager** | PM2 | Latest | Production process manager for Node.js ensuring continuous uptime, auto-restart, and log rotation. |
-| **Web Server / Proxy** | Nginx | 1.18+ | High-performance reverse proxy handling port forwarding (80 &rarr; 5000) and SSL termination. |
-| **Cloud Hosting** | AWS EC2 (Ubuntu 22.04 LTS)| t2.micro / t3.small | Industry-standard cloud virtual machine offering reliable compute and isolated security groups. |
-| **Testing Harness** | Node Test Runner & Supertest | Built-in | Native, fast automated testing verifying HTTP response codes and database states. |
+| Component | Technology | Deployment / version evidence | Role |
+|---|---|---|---|
+| Frontend | HTML5, CSS3, Bootstrap 5.3.3, Vanilla JavaScript | Static site hosted on Vercel | Responsive catalogue and admin interface |
+| Backend runtime | Node.js | Render runtime; health response observed Node.js v26.13.1 | Executes API server |
+| Web framework | Express.js 4.21.x | Render web service | REST API and middleware |
+| ODM | Mongoose 8.x | Backend dependency | Schema validation and MongoDB access |
+| Database | MongoDB Atlas 8.x | Active ProductHubCluster; database `product_catalogue` | Document persistence |
+| Frontend hosting | Vercel | Production frontend URL | Static asset hosting and deployment |
+| Backend hosting | Render | Free web service in Singapore region | Managed Node.js application hosting |
+| Testing | Node test runner, Supertest, frontend tests | Earlier recorded results: 17 backend and 8 frontend tests | API and UI quality verification |
 
----
+The production environment is Vercel + Render + MongoDB Atlas. AWS EC2, Nginx, and PM2 are not part of the current running deployment.
 
 ## 6. SYSTEM ARCHITECTURE
 
