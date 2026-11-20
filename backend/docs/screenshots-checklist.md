@@ -1,32 +1,29 @@
 # ProductHub – College Submission Screenshots Checklist
 
-To complete your assignment submission, capture screenshots of the running system and place the image files in your college report or assignment zip folder under a `screenshots/` directory.
+Capture genuine screenshots from the deployed application and Atlas. Save them under a `screenshots/` directory and label each figure in the report. Do not include credentials, connection strings, access tokens, or private keys.
 
-Use this checklist to ensure all 12 required screenshots are included:
+## Required evidence
 
----
+| # | Screenshot | What it must show | Status |
+|---:|---|---|---|
+| 1 | Production dashboard | Browser address bar, dashboard metrics, connected database status | Capture / confirm saved |
+| 2 | Product catalogue | Vercel URL and 12 of 12 product cards | Captured in conversation |
+| 3 | Search result | Search term and filtered product results | Pending capture |
+| 4 | Add product | Add form and successful creation toast using a temporary test record | Pending clean capture |
+| 5 | Update product | Updated product and success notification | Captured in conversation |
+| 6 | Delete product | Deletion success notification and catalogue count change | Captured in conversation |
+| 7 | Restored product | Logitech P1009 with correct image, description, specification | Captured in conversation |
+| 8 | Render API root | Render URL and API running JSON response | Captured in conversation |
+| 9 | Render health endpoint | `/api/health` showing Healthy and database Connected; redact no secrets because none should appear | Captured in conversation |
+| 10 | Atlas collection | `product_catalogue.products` and 12 documents | Pending capture |
+| 11 | Atlas sample document | Expanded BSON/JSON document showing nested `specifications` | Pending capture |
+| 12 | Deployment dashboard | Render service LIVE and Vercel production deployment READY | Pending fresh capture |
+| 13 | EC2 VM evidence (only if required) | Running Ubuntu EC2 instance and security group | Not available – EC2 not created |
 
-## Required Screenshots Matrix
+## Capture instructions
 
-| # | Item Name | What to Display on Screen | How to Capture | Check |
-| :-: | :--- | :--- | :--- | :-: |
-| **1** | **Application Home Page** | Top navigation bar, brand banner, quick metrics, and database status indicator showing "Atlas Online". | Open `http://localhost:5000/#dashboard` (or EC2 public IP). | [ ] |
-| **2** | **Product Dashboard** | The 4 metric cards (Total Products, Active Brands, Categories, Average Price) + Category distribution pills + Recently added table. | Scroll through `#dashboard` view. | [ ] |
-| **3** | **Add Product Form** | Filled-out "Add New Product" form with Product ID, Name, Price, and Nested Specifications, showing the Live Document Preview card on the right. | Navigate to `#add-product` and type in test details. | [ ] |
-| **4** | **Product Listing (Catalogue)** | Responsive grid of product cards showing images, badges, price in ₹, stock status, and specification pills. | Navigate to `#catalogue`. | [ ] |
-| **5** | **Search Results** | Catalogue view with a search term entered (e.g. "Dell" or "MacBook") showing filtered matching products. | Type query in search bar and click "Search". | [ ] |
-| **6** | **Update Operation** | "Update Product Document" modal pre-filled with existing data and modified values before saving. | Click the pencil edit icon on any product card. | [ ] |
-| **7** | **Delete Confirmation** | "Confirm Deletion" modal dialog warning the user before removing the document from MongoDB Atlas. | Click the red trash icon on any product card. | [ ] |
-| **8** | **MongoDB Atlas Collection** | MongoDB Atlas Web UI showing `product_catalogue` database and `products` collection with document count. | Log in to cloud.mongodb.com &rarr; Databases &rarr; Browse Collections. | [ ] |
-| **9** | **Sample MongoDB Document** | Expanded JSON/BSON document view inside MongoDB Atlas (showing nested `specifications` object). | Click on any document in MongoDB Atlas collection view. | [ ] |
-| **10**| **Database Connection Verification** | Terminal output of Node.js server startup showing `✅ MongoDB Connected successfully` or `npm run seed` completion. | Capture terminal console log output. | [ ] |
-| **11**| **AWS EC2 Instance** | AWS EC2 Console showing running instance `ProductHub-WebServer` with Public IPv4 and Security Group rules. | Open AWS EC2 Console &rarr; Instances view. | [ ] |
-| **12**| **Running Deployed Application** | Browser address bar showing the AWS EC2 Public IP or domain name with ProductHub fully loaded. | Navigate to `http://<EC2-PUBLIC-IP>` in your browser. | [ ] |
-
----
-
-## Tips for Presentation & Report
-* Ensure the browser address bar is visible in web screenshots to prove deployment.
-* Use clear, high-resolution window captures (Alt + PrtScn on Windows).
-* Label each figure clearly in your report (e.g., *Figure 4.1: Product Catalogue Grid View*).
-
+- Keep the browser address bar visible for hosted application evidence.
+- Capture full, readable pages at a consistent zoom level.
+- Use a temporary product for create/update/delete demonstrations; restore the sample dataset to 12 after testing.
+- Do not edit or fabricate screenshots. The screenshots already shared in the conversation are evidence, but save original image files locally for the final submission.
+- If faculty requires EC2, capture the actual EC2 console and VM-hosted application only after it has been provisioned and tested.
