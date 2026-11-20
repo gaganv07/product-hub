@@ -1,120 +1,66 @@
 # ProductHub – System Architecture & Cloud Infrastructure
 
-## 1. Executive Architecture Overview
+## 1. Current production architecture
 
-**ProductHub** is a production-ready, cloud-native Product Catalogue Management System architected for enterprise retail and e-commerce use cases. It demonstrates the advantages of a **Document-Oriented Database (MongoDB Atlas)** over traditional relational databases for storing highly varied, nested, and extensible product specifications.
-
-The application follows a decoupled multi-tier architectural pattern deployed on an **AWS EC2 Ubuntu Linux Virtual Machine** communicating securely with a distributed **MongoDB Atlas Cloud Cluster** over encrypted TLS/SSL connections.
-
----
-
-## 2. System Architecture Diagram
+ProductHub is a full-stack product catalogue application using a document-oriented MongoDB database. The currently deployed system is split across Vercel, Render, and MongoDB Atlas.
 
 ```mermaid
 flowchart TD
-    subgraph Client_Tier["Client Tier (User Interface)"]
-        Browser["User Web Browser (Chrome / Edge / Firefox)"]
-        UI["Bootstrap 5 UI + Vanilla JS Client App"]
-        Browser --> UI
-    end
-
-    subgraph AWS_Cloud["AWS Cloud Infrastructure (EC2 Ubuntu 22.04 LTS VM)"]
-        direction TB
-        SecurityGroup["AWS EC2 Security Group (Ports: 22, 80, 443, 5000)"]
-        Nginx["Nginx Reverse Proxy / Load Balancer (Port 80/443)"]
-        PM2["PM2 Production Process Manager (Zero-Downtime Cluster)"]
-        
-        subgraph Node_App["Node.js & Express.js Application Server (Port 5000)"]
-            Router["Express API Router (/api/products, /api/health)"]
-            Controllers["Product Controller (CRUD & Aggregation Logic)"]
-            Middleware["Middleware (CORS, Morgan, ErrorHandler)"]
-            Mongoose["Mongoose ODM (Schema & Validation Layer)"]
-            
-            Router --> Middleware
-            Middleware --> Controllers
-            Controllers --> Mongoose
-        end
-        
-        SecurityGroup --> Nginx
-        Nginx --> Node_App
-        PM2 -.->|Monitors & Restarts| Node_App
-    end
-
-    subgraph MongoDB_Atlas_Cloud["MongoDB Atlas Cloud Tier (Managed Document Database)"]
-        direction TB
-        AtlasNetwork["Atlas Network Access (IP Whitelist & TLS 1.3)"]
-        PrimaryReplica["Primary Replica Node (Read / Write)"]
-        SecondaryReplica1["Secondary Node 1 (Replication / High Availability)"]
-        SecondaryReplica2["Secondary Node 2 (Replication / Automatic Failover)"]
-        
-        subgraph Database["Database: product_catalogue"]
-            Collection["Collection: products (BSON Document Store)"]
-            Indexes["Indexes: productId (unique), text (name, brand, category)"]
-        end
-
-        AtlasNetwork --> PrimaryReplica
-        PrimaryReplica -.-> SecondaryReplica1
-        PrimaryReplica -.-> SecondaryReplica2
-        PrimaryReplica --> Database
-    end
-
-    UI -->|HTTPS / REST API JSON| SecurityGroup
-    Mongoose -->|TLS Encrypted Connection mongodb+srv://| AtlasNetwork
+    U[User Browser]
+    F[Vercel: Static HTML, CSS, Bootstrap, Vanilla JS]
+    B[Render: Node.js + Express REST API]
+    M[MongoDB Atlas: ProductHubCluster]
+    C[(product_catalogue.products)]
+    U -->|HTTPS| F
+    F -->|HTTPS REST / JSON| B
+    B -->|Mongoose over TLS| M
+    M --> C
 ```
 
----
+## 2. Deployment components
 
-## 3. Tier-by-Tier Architectural Breakdown
+### 2.1 Frontend – Vercel
+- Repository: `gaganv07/product-hub`
+- Root directory: `frontend`
+- Production URL: https://producthub-frontend-two.vercel.app
+- Technology: HTML5, CSS3, Bootstrap 5, Vanilla JavaScript.
+- Uses the configured production API origin in `frontend/js/config.js`.
 
-### 3.1. Client Presentation Tier
-* **Technology:** HTML5, CSS3, Bootstrap 5.3, Bootstrap Icons, JavaScript (ES6+).
-* **Role:**
-  * Delivers a responsive admin dashboard and product catalogue.
-  * Interacts with Express REST endpoints asynchronously via standard Web `fetch()` API.
-  * Provides real-time client-side live document previewing and instant search filtering.
-  * Manages UI notifications through non-intrusive Bootstrap toast messages and modal dialogues.
+### 2.2 Backend – Render
+- Service: `producthub-api`
+- Production URL: https://producthub-api-da3l.onrender.com
+- Technology: Node.js, Express, Mongoose.
+- Exposes product CRUD, search, dashboard statistics, and health endpoints.
+- Uses Render-provided port configuration and environment variables.
 
-### 3.2. Web Server & Compute Tier (AWS EC2)
-* **Compute Instance:** AWS EC2 `t2.micro` or `t3.small` running Ubuntu 22.04 LTS Linux.
-* **Process Manager:** **PM2** ensures zero-downtime restarts, environment variable injection, log rotation, and auto-start on VM reboot.
-* **Security Layer:** AWS Security Groups allow inbound traffic strictly on ports 22 (SSH admin access) and 80/443 (HTTP/HTTPS public access), with the Node.js application running safely on internal port 5000 behind reverse proxy.
+### 2.3 Database – MongoDB Atlas
+- Atlas project: `ProductHub-Production`
+- Cluster: `ProductHubCluster`
+- Database: `product_catalogue`
+- Collection: `products`
+- Documents use embedded `specifications` subdocuments to represent product-specific attributes.
 
-### 3.3. Backend Application Tier (Node.js & Express.js)
-* **Routing Layer:** RESTful endpoints for CRUD (`POST`, `GET`, `PUT`, `DELETE`).
-* **Controller Layer:** Decoupled business logic handling pagination, multi-attribute regex search, aggregation pipeline calculations, and data sanitization.
-* **Data Modeling & Validation Layer:** **Mongoose 8.x** enforces document schemas, regex validation for product identifiers, non-negative price constraints, and custom pre-save checks before persisting to disk.
+## 3. Request and data flow
 
-### 3.4. Data Storage Tier (MongoDB Atlas)
-* **Cluster Type:** Managed MongoDB Atlas Multi-AZ replica set ensuring 99.99% service uptime.
-* **Document Engine:** WiredTiger storage engine with snappy document compression.
-* **Data Format:** Binary JSON (BSON), enabling native nesting of technical specifications without foreign keys or expensive SQL table joins.
+1. The user interacts with the frontend in a browser.
+2. Vanilla JavaScript sends HTTPS requests to the Express API.
+3. Express routes requests to controller logic and validates payloads.
+4. Mongoose maps product data to MongoDB documents.
+5. Atlas stores or returns the document.
+6. The API responds with JSON and the frontend updates the catalogue or dashboard.
 
----
+## 4. Database design rationale
 
-## 4. End-to-End Request & Data Flow
+The product catalogue contains heterogeneous categories such as laptops, smartphones, accessories, and home appliances. A document model allows each product to embed its own `specifications` object without requiring a large sparse relational table. The `productId` business key is unique; fields such as name, brand, category, price, image, stock, and timestamps support catalogue display and filtering.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as User / Admin
-    participant UI as Frontend (Single Page UI)
-    participant Server as Express Server (AWS EC2)
-    participant DB as MongoDB Atlas Cluster
+## 5. Security and operations
 
-    User->>UI: Fills "Add Product" form & clicks Submit
-    UI->>UI: Validates required fields & formats nested specs
-    UI->>Server: POST /api/products { productId, name, price, specs }
-    Server->>Server: Run Mongoose schema validation & duplicate check
-    Server->>DB: Product.create(document)
-    DB-->>Server: Acknowledges insert & returns new _id, createdAt
-    Server-->>UI: 201 Created { success: true, data: document }
-    UI->>User: Displays green success toast & routes to Catalogue
-```
+- The MongoDB URI is stored as a Render environment secret, not in source control.
+- Atlas Network Access restricts which sources can connect.
+- The database user should be scoped to `readWrite` on `product_catalogue` only.
+- Frontend-to-backend communication uses HTTPS.
+- Production health checks use `/api/health`.
 
----
+## 6. Infrastructure requirement status
 
-## 5. High Availability & Disaster Recovery Strategy
-1. **Automated Failover:** MongoDB Atlas replica sets elect a new primary node in under 3 seconds in the event of hardware degradation.
-2. **Crash Resilience:** PM2 on the EC2 VM automatically restarts any crashed Node.js worker instance within milliseconds.
-3. **Connection Pooling:** Mongoose maintains an active pool of database socket connections, recycling connections rather than incurring the overhead of frequent handshakes.
-
+AWS EC2 was not created because AWS account registration was not completed. Therefore, the current architecture does **not** include EC2, Ubuntu, Nginx, or PM2. If the assignment explicitly requires an IaaS VM, this remains a separate deployment task. Do not submit the previous EC2 architecture diagram as a representation of the running system.
