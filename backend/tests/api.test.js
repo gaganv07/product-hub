@@ -345,4 +345,28 @@ describe('ProductHub API & MongoDB Document Tests', () => {
     assert.equal(res.body.success, true);
     assert.equal(res.body.currentPage, 1);
   });
+
+  // 18. CORS Preflight & Preview Origin Support
+  it('TC-17: CORS - Allow valid Vercel preview deployment origin on OPTIONS and POST', async () => {
+    const previewOrigin = 'https://producthub-frontend-km2r87s6r-gagangowdabm27-1460s-projects.vercel.app';
+    const res = await request(app)
+      .options('/api/products')
+      .set('Origin', previewOrigin)
+      .set('Access-Control-Request-Method', 'POST');
+
+    assert.equal(res.status, 204);
+    assert.equal(res.headers['access-control-allow-origin'], previewOrigin);
+  });
+
+  // 19. CORS Security: Reject Unauthorized Origin
+  it('TC-18: CORS - Block unauthorized external origin with 500 error', async () => {
+    const maliciousOrigin = 'https://malicious-attacker.com';
+    const res = await request(app)
+      .options('/api/products')
+      .set('Origin', maliciousOrigin)
+      .set('Access-Control-Request-Method', 'POST');
+
+    assert.equal(res.status, 500);
+    assert.match(res.body.message, /CORS policy blocked origin/i);
+  });
 });

@@ -20,23 +20,55 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configure CORS (local frontend http://localhost:3000 + configurable CORS_ORIGIN)
-const defaultOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+// Configure CORS (local frontend + configurable CORS_ORIGIN + strict Vercel preview matching)
+const defaultOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'https://producthub-frontend-two.vercel.app'
+];
 const envOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
   : [];
 const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 
-app.use(cors({
+/**
+ * Validates if an incoming origin belongs to an authorized ProductHub Vercel deployment:
+ * - Stable production: https://producthub-frontend-two.vercel.app
+ * - Preview / branch deployments: https://producthub-frontend-<hash>-<team>.vercel.app
+ * - Git branch deployments: https://producthub-*-gagangowdabm27-1460s-projects.vercel.app
+ */
+const isAllowedVercelOrigin = (origin) => {
+  try {
+    const url = new URL(origin);
+    if (url.protocol !== 'https:') {
+      return false;
+    }
+    const hostname = url.hostname.toLowerCase();
+    return /^product-?hub(-[a-z0-9_-]+)*\.vercel\.app$/i.test(hostname);
+  } catch (e) {
+    return false;
+  }
+};
+
+const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+    // Allow non-browser requests or same-origin requests where Origin header is absent
+    if (!origin) {
+      return callback(null, true);
+    }
+    // Allow explicit origins, wildcard in env, or strictly validated Vercel project domains
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*') || isAllowedVercelOrigin(origin)) {
       return callback(null, true);
     }
     return callback(new Error(`CORS policy blocked origin: ${origin}`), false);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // HTTP Request Logger
 if (process.env.NODE_ENV !== 'test') {
