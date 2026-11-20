@@ -96,9 +96,9 @@ product-hub/
 1. **Configure the Backend API URL:**
    Open `frontend/js/config.js` and update `API_BASE_URL` from `'BACKEND_API_PLACEHOLDER'` to your backend URL:
    ```javascript
-   API_BASE_URL: 'http://localhost:5000' // Or your deployed EC2/API domain
+   API_BASE_URL: 'http://localhost:5000' // https://producthub-api-da3l.onrender.com
    ```
-   *(If served behind an Nginx reverse proxy on the same domain, set `API_BASE_URL: ''`.)*
+   *(The production frontend already uses the Render API URL configured in `frontend/js/config.js`.)*
 
 2. **Start the frontend preview server:**
    ```bash
@@ -128,3 +128,22 @@ product-hub/
 | `PUT` | `/api/products/:id` | Update an existing product document |
 | `DELETE` | `/api/products/:id` | Delete a product document |
 
+
+
+## 6. Current Production Deployment
+
+The currently running production architecture is **Vercel + Render + MongoDB Atlas**. AWS EC2 has not been provisioned.
+
+| Component | Production service | URL / details |
+|---|---|---|
+| Frontend | Vercel | https://producthub-frontend-two.vercel.app |
+| Express API | Render | https://producthub-api-da3l.onrender.com |
+| API health | Render | https://producthub-api-da3l.onrender.com/api/health |
+| Database | MongoDB Atlas | `ProductHub-Production` / `ProductHubCluster` |
+| Database collection | MongoDB Atlas | `product_catalogue.products` (12 sample products) |
+
+The health endpoint has returned a healthy API status and a connected database. The deployed dashboard and catalogue have displayed all 12 products. Browser verification has covered catalogue reads and successful create, update, and delete actions.
+
+Detailed deployment steps are in [backend/docs/deployment-guide.md](backend/docs/deployment-guide.md). The architecture and current EC2 limitation are documented in [backend/docs/architecture.md](backend/docs/architecture.md).
+
+**Assignment caveat:** If the faculty rubric explicitly requires an IaaS virtual machine such as AWS EC2, that requirement is still pending. The existing Render deployment is managed application hosting and must not be represented as an EC2 VM.
