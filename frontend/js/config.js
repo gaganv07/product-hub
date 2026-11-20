@@ -35,7 +35,7 @@
   var LOCAL_DEV_API_URL = 'http://localhost:5000';
   // Configure your production backend URL here or via window.PRODUCTHUB_CONFIG.API_BASE_URL.
   // Empty string ('') uses same-origin relative '/api/...' routes (e.g. behind Nginx).
-  var PRODUCTION_API_BASE_URL = '';
+  var PRODUCTION_API_BASE_URL = 'https://producthub-api-da3l.onrender.com';
 
   function resolveApiBaseUrl() {
     if (typeof window !== 'undefined') {
