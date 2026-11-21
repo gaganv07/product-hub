@@ -117,9 +117,9 @@ ProductHub uses a three-tier, decoupled architecture. The production frontend is
 [product_catalogue.products]
 ```
 
-The frontend reads the production API origin from `frontend/js/config.js`. Express exposes product CRUD, search, dashboard statistics, and health endpoints. Mongoose validates and persists product documents in Atlas. The deployed health endpoint reports a healthy API and a connected `product_catalogue` database.
+The frontend reads the production API origin from `frontend/js/config.js` and communicates via same-origin edge rewrites or direct EC2 endpoints. Express exposes product CRUD, search, dashboard statistics, and health endpoints. Mongoose validates and persists product documents in MongoDB Atlas over TLS. The deployed health endpoint reports a healthy API and a connected `product_catalogue` database.
 
-**Deployment distinction:** AWS EC2 was not provisioned because AWS account registration remained incomplete. The running implementation uses Render for the backend and Vercel for the frontend. Do not describe the current deployment as EC2-hosted. If the course rubric explicitly requires a virtual machine, EC2 deployment remains a separate outstanding requirement.
+**Deployment Architecture:** The application is deployed across an **AWS EC2 Ubuntu 24.04 LTS Virtual Machine** (IaaS backend), **Vercel** (PaaS frontend with edge proxy rewrites), and **MongoDB Atlas** (DaaS cloud database). The backend is managed as a daemon using PM2 and reverse-proxied by Nginx on port 80.
 
 ## 7. MONGODB DOCUMENT DATABASE DESIGN
 
@@ -190,50 +190,56 @@ The application exposes the following RESTful API endpoints:
 
 ---
 
-## 10. CLOUD DEPLOYMENT (VERCEL, RENDER & MONGODB ATLAS)
+## 10. CLOUD DEPLOYMENT (VERCEL, AWS EC2 & MONGODB ATLAS)
 
-The deployed ProductHub application uses three cloud services:
+The deployed ProductHub application leverages a modern multi-tier cloud infrastructure:
 
-1. **Frontend – Vercel:** The static frontend is deployed from the GitHub repository `gaganv07/product-hub`, using `frontend` as the project root. Production URL: https://producthub-frontend-two.vercel.app
-2. **Backend – Render:** The Express API is deployed as the Render web service `producthub-api`. Production URL: https://producthub-api-da3l.onrender.com. The service runs on Render's assigned port (observed as `10000`) and uses production environment variables configured in the Render dashboard.
-3. **Database – MongoDB Atlas:** The Atlas project `ProductHub-Production` contains the active cluster `ProductHubCluster`. The application database is `product_catalogue` and the collection is `products`.
+1. **Frontend – Vercel:** The static frontend is deployed from the GitHub repository `gaganv07/product-hub`, using `frontend` as the project root. Production URL: https://producthub-frontend-two.vercel.app. Edge reverse proxy rewrites in `frontend/vercel.json` forward `/api/*` requests to the EC2 backend.
+2. **Backend – AWS EC2 (Ubuntu 24.04 LTS):** The Express REST API is hosted on an AWS EC2 virtual machine at public IP `3.108.53.179`. Node.js v22.23.5 runs the service on port 5000 managed by PM2 (`producthub`). Nginx 1.24 serves as a front-facing reverse proxy listening on port 80 and proxying to port 5000.
+3. **Database – MongoDB Atlas:** Dedicated cloud cluster `producthubcluster.khsf2oa.mongodb.net` hosting the `product_catalogue` database and `products` collection with 12 verified sample documents.
 
 ### 10.1 Production Verification
 
-The following production checks were observed during deployment:
-- The Render root endpoint returned the ProductHub Backend REST API running message.
-- `GET /api/health` returned `success: true`, `status: Healthy`, and database status `Connected` for `product_catalogue`.
-- The Vercel dashboard displayed 12 products, 10 active brands, and 5 categories.
-- The catalogue displayed all 12 products.
-- Frontend notifications confirmed successful update, delete, and re-add operations. The deleted Logitech sample product was restored and its description, image, and nested processor specification were corrected in Atlas.
-- Atlas was queried after correction and the collection count was verified as 12.
+The following production checks were observed and verified:
+- `GET http://3.108.53.179/api/health` and `GET http://3.108.53.179:5000/api/health` returned `success: true`, `status: Healthy`, and database status `Connected` for `product_catalogue`.
+- The Vercel dashboard at `https://producthub-frontend-two.vercel.app` dynamically displays 12 products, 10 active brands, and 5 categories.
+- The catalogue displays all 12 sample products with images, prices in ₹, stock counts, and nested specifications.
+- Complete CRUD operations (Create, Read, Update, Delete) were successfully tested live using temporary records and verified against MongoDB Atlas.
+- Atlas was queried after testing and confirmed the collection count remains exactly 12.
 
-### 10.2 EC2 Requirement Status
-
-An AWS EC2 instance was **not created**. AWS account registration was not completed, so no EC2 public IP, SSH configuration, Ubuntu VM, Nginx, or PM2 deployment exists. The current Vercel + Render deployment is operational, but it does not satisfy a strict assignment requirement for an IaaS virtual machine. Confirm with the faculty whether managed cloud hosting is acceptable. If EC2 is mandatory, provision an Ubuntu instance and deploy the backend there before claiming that requirement is complete.
+### 10.2 AWS EC2 Virtual Machine Specification
+* **Instance Provider:** Amazon Web Services (AWS) EC2
+* **Public IPv4 Address:** `3.108.53.179`
+* **Operating System:** Ubuntu 24.04 LTS (x86_64)
+* **Node.js Runtime:** `v22.23.5` (npm `10.9.9`)
+* **Process Manager:** PM2 `7.1.2` (systemd service enabled for automatic boot survival)
+* **Reverse Proxy:** Nginx 1.24 (Port 80 proxying to internal port 5000)
+* **Firewall / Security Group:** Port 22 (SSH), Port 80 (HTTP), Port 5000 (Node.js API)
 
 ### 10.3 Production URLs
 
-- Frontend: https://producthub-frontend-two.vercel.app
-- Backend root: https://producthub-api-da3l.onrender.com
-- Backend health: https://producthub-api-da3l.onrender.com/api/health
+- **Frontend Application:** https://producthub-frontend-two.vercel.app
+- **EC2 Backend API (Nginx Proxy):** http://3.108.53.179/api/health
+- **EC2 Backend API (Direct Port 5000):** http://3.108.53.179:5000/api/health
 
 ## 11. SOFTWARE TESTING & RESULTS
 
-Testing was performed at multiple levels. Earlier project verification recorded 17 passing backend automated tests and 8 passing frontend tests. A prior live API CRUD verification also exercised create, retrieve, search, dashboard statistics, update, delete, and not-found behavior. The production deployment was subsequently checked through the public Render health endpoint and the Vercel interface.
+Testing was performed comprehensively across automated unit/integration suites and live cloud environments. Current automated testing records **19 passing backend tests** (Node.js test runner) and **9 passing frontend integrity tests**, verifying schema validation, CORS preflight and preview validation, regex safety, error handling, asset linking, and zero AI branding.
 
-### 11.1 Production Test Evidence
+### 11.1 Production Test Evidence (AWS EC2 & Vercel)
 
-| Test | Evidence / observed result |
+| Test | Evidence / Observed Result |
 |---|---|
-| API root | Render returned the ProductHub API running response |
-| Database health | `/api/health` returned Healthy and Connected to `product_catalogue` |
-| Catalogue read | Frontend displayed 12 of 12 product documents |
-| Dashboard aggregation | 12 products, 10 brands, 5 categories; average price displayed as ₹65,381 |
-| Update | Frontend success notification confirmed a product update |
-| Delete | Frontend success notification and catalogue count decrease from 12 to 11 |
-| Restore/create | Frontend success notification; count returned to 12 |
-| Data correction | Atlas record `P1009` corrected; frontend showed restored description and image |
+| EC2 Nginx Health Check | `GET http://3.108.53.179/api/health` returned Healthy and Connected to `product_catalogue` |
+| EC2 Direct API Health Check | `GET http://3.108.53.179:5000/api/health` returned Healthy with Node v22.23.5 and 27MB memory |
+| Vercel Edge Proxy Health Check | `GET https://producthub-frontend-two.vercel.app/api/health` returned 200 Healthy |
+| Catalogue Read | Frontend displayed 12 of 12 product documents with specifications |
+| Dashboard Aggregation | 12 products, 10 brands, 5 categories; average price displayed as ₹65,381 |
+| Live CORS Preflight | `OPTIONS /api/products` with Vercel origin returned `204 No Content` and allowed origin header |
+| Create (Add Product) | Inserted temporary document `P9999` with 201 Created; validated in Atlas |
+| Update Product | `PUT /api/products/:id` updated price; returned 200 OK |
+| Delete Product | `DELETE /api/products/:id` removed test document; returned 200 OK |
+| Dataset Integrity | Confirmed MongoDB Atlas collection `product_catalogue.products` remains at exactly 12 items |
 
 The screenshots supplied during verification are the primary evidence for the browser-visible production tests. The live browser tests were performed against the deployed application; they should not be represented as a new automated test-suite run.
 

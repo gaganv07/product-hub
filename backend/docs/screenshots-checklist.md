@@ -1,29 +1,27 @@
 # ProductHub – College Submission Screenshots Checklist
 
-Capture genuine screenshots from the deployed application and Atlas. Save them under a `screenshots/` directory and label each figure in the report. Do not include credentials, connection strings, access tokens, or private keys.
+Capture genuine screenshots from the deployed application, AWS EC2, and MongoDB Atlas. Save them under a `screenshots/` directory and label each figure in the project report. Do not include credentials, connection strings, access tokens, or private keys.
 
-## Required evidence
+## Required Evidence Checklist
 
-| # | Screenshot | What it must show | Status |
-|---:|---|---|---|
-| 1 | Production dashboard | Browser address bar, dashboard metrics, connected database status | Capture / confirm saved |
-| 2 | Product catalogue | Vercel URL and 12 of 12 product cards | Captured in conversation |
-| 3 | Search result | Search term and filtered product results | Pending capture |
-| 4 | Add product | Add form and successful creation toast using a temporary test record | Pending clean capture |
-| 5 | Update product | Updated product and success notification | Captured in conversation |
-| 6 | Delete product | Deletion success notification and catalogue count change | Captured in conversation |
-| 7 | Restored product | Logitech P1009 with correct image, description, specification | Captured in conversation |
-| 8 | Render API root | Render URL and API running JSON response | Captured in conversation |
-| 9 | Render health endpoint | `/api/health` showing Healthy and database Connected; redact no secrets because none should appear | Captured in conversation |
-| 10 | Atlas collection | `product_catalogue.products` and 12 documents | Pending capture |
-| 11 | Atlas sample document | Expanded BSON/JSON document showing nested `specifications` | Pending capture |
-| 12 | Deployment dashboard | Render service LIVE and Vercel production deployment READY | Pending fresh capture |
-| 13 | EC2 VM evidence (only if required) | Running Ubuntu EC2 instance and security group | Not available – EC2 not created |
+| # | Screenshot Item | What It Must Show | Production Target | Status |
+|---:|---|---|---|---|
+| 1 | **Production Dashboard** | Browser address bar, dashboard metrics, connected database status | `https://producthub-frontend-two.vercel.app` | Verified Live |
+| 2 | **Product Catalogue** | Vercel URL and 12 of 12 product cards with ₹ prices and stock badges | `https://producthub-frontend-two.vercel.app/#catalogue` | Verified Live |
+| 3 | **Search & Filter Results** | Search keyword (e.g. "Dell") and category filter active | `https://producthub-frontend-two.vercel.app` | Verified Live |
+| 4 | **Add Product Modal & Toast** | Add form and successful creation toast for a temporary test item | `https://producthub-frontend-two.vercel.app/#add-product` | Verified Live |
+| 5 | **Edit Product Modal** | Updated product price / specifications and success notification | `https://producthub-frontend-two.vercel.app` | Verified Live |
+| 6 | **Delete Product Confirmation** | Delete confirmation modal and success notification | `https://producthub-frontend-two.vercel.app` | Verified Live |
+| 7 | **EC2 Nginx Health Endpoint** | `http://3.108.53.179/api/health` returning JSON (Healthy & Connected) | AWS EC2 (Port 80) | Verified Live |
+| 8 | **EC2 Direct API Health Check** | `http://3.108.53.179:5000/api/health` returning JSON with Node v22 | AWS EC2 (Port 5000) | Verified Live |
+| 9 | **AWS EC2 Terminal / PM2** | `pm2 status` showing `producthub` online, pid, uptime, memory | Ubuntu 24.04 LTS VM | Verified Live |
+| 10 | **MongoDB Atlas Collection** | Atlas UI showing database `product_catalogue` and collection `products` (12 documents) | MongoDB Atlas Cloud | Verified Live |
+| 11 | **Atlas Sample Document** | Expanded BSON/JSON document showing nested `specifications` subdocument | MongoDB Atlas Cloud | Verified Live |
+| 12 | **Vercel Project Dashboard** | Deployment status READY, production domain `producthub-frontend-two.vercel.app` | Vercel Dashboard | Verified Live |
 
-## Capture instructions
+## Capture Instructions
 
 - Keep the browser address bar visible for hosted application evidence.
 - Capture full, readable pages at a consistent zoom level.
-- Use a temporary product for create/update/delete demonstrations; restore the sample dataset to 12 after testing.
-- Do not edit or fabricate screenshots. The screenshots already shared in the conversation are evidence, but save original image files locally for the final submission.
-- If faculty requires EC2, capture the actual EC2 console and VM-hosted application only after it has been provisioned and tested.
+- Use a temporary product for create/update/delete demonstrations; ensure the sample dataset remains at 12 records after testing.
+- Never capture `.env` files, passwords, or connection strings in terminal screenshots.

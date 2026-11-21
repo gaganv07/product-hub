@@ -33,8 +33,8 @@
   'use strict';
 
   var LOCAL_DEV_API_URL = 'http://localhost:5000';
-  // Production uses same-origin relative API requests ('') proxied via Vercel rewrites (vercel.json) or Nginx
-  var PRODUCTION_API_BASE_URL = '';
+  // Configured AWS EC2 Backend Base URL (Port 5000)
+  var PRODUCTION_API_BASE_URL = 'http://3.108.53.179:5000';
 
   function resolveApiBaseUrl() {
     if (typeof window !== 'undefined') {
@@ -54,6 +54,13 @@
       if (host === 'localhost' || host === '127.0.0.1') {
         return LOCAL_DEV_API_URL;
       }
+
+      // When running on Vercel over HTTPS, use same-origin relative URL ('')
+      // to route through Vercel reverse proxy rewrite and prevent browser Mixed Content blocking
+      if (window.location && window.location.protocol === 'https:' && window.location.hostname.endsWith('vercel.app')) {
+        return '';
+      }
+
       return PRODUCTION_API_BASE_URL;
     }
 

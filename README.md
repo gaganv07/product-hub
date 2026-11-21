@@ -95,7 +95,7 @@ product-hub/
 
 1. **Frontend Configuration & Architecture:**
    * **Local Development (`localhost`):** Automatically targets `http://localhost:5000`.
-   * **Production (`https://producthub-frontend-two.vercel.app`):** Uses same-origin relative requests (`''`) proxied via `frontend/vercel.json` (`/api/:path*` ➔ `http://3.108.53.179/api/:path*`), completely preventing browser Mixed Content blocking.
+   * **Production:** Configured with `PRODUCTION_API_BASE_URL = 'http://3.108.53.179:5000'`. When accessed over HTTPS on Vercel (`https://producthub-frontend-two.vercel.app`), requests automatically use same-origin relative requests (`''`) proxied via `frontend/vercel.json` (`/api/:path*` ➔ `http://3.108.53.179/api/:path*`), completely preventing browser Mixed Content blocking.
    * **Runtime Overrides:** Can be overridden dynamically via `window.PRODUCTHUB_CONFIG.API_BASE_URL` or `localStorage.getItem('PRODUCTHUB_API_URL')`.
 
 2. **Start the frontend preview server:**
@@ -135,7 +135,8 @@ ProductHub is deployed across a multi-tier cloud infrastructure utilizing **Verc
 | Component | Production Service | URL / Host Details | Description |
 | :--- | :--- | :--- | :--- |
 | **Frontend** | Vercel | https://producthub-frontend-two.vercel.app | Static Single-Page App proxied to EC2 |
-| **Backend API** | AWS EC2 (Ubuntu 24.04 LTS) | http://3.108.53.179 | Express.js REST API on port 5000 (PM2 + Nginx) |
+| **Backend API (Nginx)** | AWS EC2 (Ubuntu 24.04 LTS) | http://3.108.53.179 | Nginx reverse proxy forwarding port 80 to port 5000 |
+| **Backend API (Direct)** | AWS EC2 (Ubuntu 24.04 LTS) | http://3.108.53.179:5000 | Direct Express.js application port managed by PM2 |
 | **API Health Check** | AWS EC2 / Nginx | http://3.108.53.179/api/health | Returns system uptime, process health, and DB status |
 | **Database Tier** | MongoDB Atlas | `producthubcluster.khsf2oa.mongodb.net` | Dedicated cloud cluster running MongoDB 7.0 |
 | **Database Collection** | MongoDB Atlas | `product_catalogue.products` | 12 verified sample product documents |

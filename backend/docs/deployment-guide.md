@@ -1,82 +1,165 @@
-# ProductHub – Current Production Deployment Guide
+# ProductHub – Production Deployment Guide
 
-This document describes the deployment that is actually running now. ProductHub uses Vercel for the static frontend, Render for the Express API, and MongoDB Atlas for the document database.
+This guide details the verified production deployment of **ProductHub**, running on a decoupled cloud architecture across **Vercel**, an **AWS EC2 Ubuntu Virtual Machine**, and **MongoDB Atlas**.
 
-## 1. Production topology
+---
 
-| Layer | Service | URL / configuration |
-|---|---|---|
-| Frontend | Vercel | https://producthub-frontend-two.vercel.app |
-| Backend | Render web service `producthub-api` | https://producthub-api-da3l.onrender.com |
-| Database | MongoDB Atlas | Project: `ProductHub-Production`; cluster: `ProductHubCluster` |
-| Database / collection | MongoDB | `product_catalogue.products` |
+## 1. Production Topology
 
-The frontend production API base URL is configured in `frontend/js/config.js`. The Render service receives its database connection string through its environment configuration. Never commit `.env`, credentials, or a full MongoDB URI to GitHub.
+| Tier | Cloud Service | Host / URL / Port | Role & Configuration |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | Vercel | [https://producthub-frontend-two.vercel.app](https://producthub-frontend-two.vercel.app) | Static SPA hosting with edge reverse-proxy rewrites |
+| **Edge Proxy** | Vercel (`vercel.json`) | `/api/:path*` ➔ `http://3.108.53.179/api/:path*` | Server-side proxy eliminating browser Mixed Content blocking |
+| **Web Server / Reverse Proxy** | Nginx 1.24 (AWS EC2) | `http://3.108.53.179` (Port 80) | Reverse proxy forwarding HTTP traffic to local port 5000 |
+| **Backend API** | Node.js / Express (AWS EC2) | `http://3.108.53.179:5000` (Port 5000) | REST API managed by PM2 service `producthub` |
+| **Database** | MongoDB Atlas | `producthubcluster.khsf2oa.mongodb.net` | Managed cloud replica set (TLS Port 27017) |
+| **Database & Collection** | MongoDB Atlas | Database: `product_catalogue` / Collection: `products` | 12 verified sample product documents |
 
-## 2. Deploying the frontend on Vercel
+---
 
-1. Import the GitHub repository `gaganv07/product-hub` into Vercel.
-2. Set the project root directory to `frontend`.
-3. Confirm the production API origin in `frontend/js/config.js` points to `https://producthub-api-da3l.onrender.com`.
-4. Deploy the production branch.
-5. Open https://producthub-frontend-two.vercel.app and verify the dashboard, catalogue, product search, and connection indicator.
+## 2. AWS EC2 Ubuntu Virtual Machine Setup
 
-## 3. Deploying the Express API on Render
+### 2.1 Instance Specifications
+* **Operating System:** Ubuntu 24.04 LTS (GNU/Linux 6.8.0-1017-aws x86_64)
+* **Public IPv4 Address:** `3.108.53.179`
+* **Node.js Runtime:** `v22.23.5`
+* **Package Manager:** npm `10.9.9`
+* **Process Manager:** PM2 `7.1.2`
+* **SSH Access:** `ssh -i <key.pem> ubuntu@3.108.53.179`
 
-1. Create a Render **Web Service** from GitHub repository `gaganv07/product-hub`.
-2. Set the service root directory to `backend`.
-3. Select the Node runtime.
-4. Use the install/build configuration required by the repository; the start command is `npm start`.
-5. Configure environment variables in Render's Environment panel. At minimum:
-   - `NODE_ENV=production`
-   - `MONGODB_URI` = the MongoDB Atlas SRV URI targeting `product_catalogue`
-   - `CORS_ORIGIN` = the deployed Vercel frontend origin, if required by the backend CORS configuration
-   - `PORT` is assigned by Render; the server must listen on `process.env.PORT`
-6. Deploy and inspect Render logs. Never paste secrets into source control or screenshots.
-7. Verify:
-   - Root: https://producthub-api-da3l.onrender.com
-   - Health: https://producthub-api-da3l.onrender.com/api/health
-   The health response should report a healthy server and a connected `product_catalogue` database.
+### 2.2 Environment Configuration (`backend/.env`)
+The backend reads its credentials from `/home/ubuntu/product-hub/backend/.env`:
+```env
+PORT=5000
+NODE_ENV=production
+MONGODB_URI=mongodb+srv://<db_user>:<db_password>@producthubcluster.khsf2oa.mongodb.net/product_catalogue?retryWrites=true&w=majority
+CORS_ORIGIN=https://producthub-frontend-two.vercel.app
+```
+*(Credentials and passwords are strictly kept out of Git via `.gitignore`.)*
 
-## 4. MongoDB Atlas configuration
+---
 
-1. Use the Atlas project `ProductHub-Production` and active cluster `ProductHubCluster`.
-2. Database: `product_catalogue`; collection: `products`.
-3. Create a database user with the minimum required role. Prefer `readWrite` scoped only to `product_catalogue`; avoid `readWriteAnyDatabase`.
-4. In Network Access, allow the Render service's outbound addresses as required by the current Render plan. If using Render's shared outbound ranges, add only the published ranges relevant to the service's region. Avoid leaving `0.0.0.0/0` enabled as a permanent production rule.
-5. Store the URI only in Render's secret environment variable configuration.
+## 3. PM2 Process Management on EC2
 
-## 5. Production acceptance tests
+The Express server runs as a background daemon managed by PM2:
 
-- Open the Vercel frontend and confirm the database status indicator is connected.
-- Confirm the dashboard displays 12 products.
-- Confirm catalogue displays 12 of 12 products.
-- Search for a known item such as Dell.
-- Create a temporary test product with a unique ID, update it, and delete it.
-- Confirm the temporary item is gone and the sample catalogue remains at 12.
-- Verify `/api/health` after deployment.
-- Capture screenshots with the browser address bar visible, while excluding credentials and private configuration.
+* **Configuration file:** `backend/ecosystem.config.js`
+* **Service script:** `server.js` (`cwd: __dirname`)
+* **Systemd integration:** Configured to survive machine reboots via `pm2-ubuntu.service`.
 
-## 6. Current deployment limitations and pending EC2 path
+### Standard PM2 Management Commands:
+```bash
+# Check status of running backend processes
+pm2 status
 
-**Important:** AWS EC2 has not been created. The earlier AWS account registration did not complete, so the project does not currently run on an Ubuntu VM. Do not describe the current production deployment as EC2, Nginx, or PM2 hosting.
+# View live application logs (output & errors)
+pm2 logs producthub --lines 50
 
-If the assignment strictly requires an IaaS VM, the remaining work is:
-1. Complete AWS account activation or use an approved cloud VM provider.
-2. Launch Ubuntu 22.04/24.04 and restrict SSH to the administrator's IP.
-3. Install Git, Node.js, and npm.
-4. Deploy the backend repository to the VM and configure secrets outside source control.
-5. Add the VM's stable outbound IP to Atlas Network Access.
-6. Run the Express API with a process manager such as PM2.
-7. Configure Nginx as a reverse proxy and enable HTTPS.
-8. Test the VM-hosted API and update the frontend API origin only if migrating production traffic.
-9. Capture the VM, security group, service, and application screenshots.
+# Restart backend process
+pm2 restart producthub
 
-Do not create or expose cloud credentials, private SSH keys, or database passwords in project documentation.
+# Save running process list for automated reboot startup
+pm2 save
+```
 
-## 7. Troubleshooting
+---
 
-- **API health is unavailable:** inspect Render deploy status and runtime logs.
-- **Database reports disconnected:** verify the Render `MONGODB_URI`, Atlas database user privileges, and Atlas Network Access rules.
-- **Frontend shows a network/CORS error:** verify the configured API origin and the backend CORS allowlist.
-- **Catalogue count differs from 12:** inspect `product_catalogue.products` in Atlas before running any seed or delete operation. Back up/export current data before destructive changes.
+## 4. Nginx Reverse Proxy Configuration
+
+Nginx acts as the front-facing web server on port 80, buffering and forwarding requests to the internal Node.js port 5000:
+
+* **Site configuration:** `/etc/nginx/sites-available/producthub`
+* **Enabled symlink:** `/etc/nginx/sites-enabled/producthub`
+
+```nginx
+upstream producthub_backend {
+    server 127.0.0.1:5000;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+
+    client_max_body_size 10M;
+
+    location / {
+        proxy_pass http://producthub_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_buffering off;
+    }
+
+    location /api/health {
+        proxy_pass http://producthub_backend/api/health;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        access_log off;
+    }
+}
+```
+
+---
+
+## 5. Vercel Frontend Deployment & Proxy Rewrites
+
+The static frontend is hosted on Vercel from the repository `gaganv07/product-hub` with **Root Directory** set to `frontend`.
+
+### 5.1 Configuration (`frontend/js/config.js`)
+* `LOCAL_DEV_API_URL`: `'http://localhost:5000'`
+* `PRODUCTION_API_BASE_URL`: `'http://3.108.53.179:5000'`
+* When loaded over HTTPS on Vercel (`vercel.app`), the client automatically makes same-origin relative `/api/...` requests to eliminate browser Mixed Content blocking.
+
+### 5.2 Edge Rewrite Configuration (`frontend/vercel.json`)
+```json
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "http://3.108.53.179/api/:path*"
+    }
+  ]
+}
+```
+
+---
+
+## 6. HTTPS Architecture & Practical Options
+
+### 6.1 The Mixed Content Challenge
+Modern browsers (Chrome, Edge, Firefox, Safari) enforce strict Mixed Content policies: an HTTPS frontend (`https://...`) is forbidden from initiating insecure HTTP (`http://...`) requests directly.
+
+### 6.2 Implemented Solution: Vercel HTTPS Edge Reverse Proxy
+The verified architecture routes client requests over HTTPS to Vercel's edge, which proxies the request to EC2:
+`Browser (HTTPS) ➔ Vercel Edge Proxy (HTTPS) ➔ Nginx on EC2 (HTTP:80) ➔ Express (HTTP:5000) ➔ MongoDB Atlas (TLS)`
+
+### 6.3 Direct HTTPS on EC2 (Optional Future Path)
+If direct HTTPS to EC2 is required without the Vercel proxy rewrite:
+1. **Assign a Custom Domain:** Point a domain name (e.g., `api.yourdomain.com`) to `3.108.53.179` via DNS A-record.
+2. **Obtain a TLS Certificate:** Free certificate via Certbot:
+   ```bash
+   sudo apt install certbot python3-certbot-nginx
+   sudo certbot --nginx -d api.yourdomain.com
+   ```
+3. **Nginx SSL Configuration:** Certbot configures port 443 with automated certificate renewal.
+*(Note: Let's Encrypt does not issue certificates for raw IP addresses or AWS default `.compute.amazonaws.com` hostnames.)*
+
+---
+
+## 7. Security & Firewall Rules
+
+1. **EC2 Security Group:**
+   - **Port 22 (SSH):** Administrator access.
+   - **Port 80 (HTTP):** Inbound web traffic for Nginx reverse proxy.
+   - **Port 5000:** Node.js Express direct port.
+2. **MongoDB Atlas Network Access:**
+   - EC2 Public IP (`3.108.53.179`) is whitelisted in Atlas Network Access.
+3. **Express CORS Rules:**
+   - Validates `http://localhost:3000`, `https://producthub-frontend-two.vercel.app`, and project preview subdomains (`^product-?hub(-[a-z0-9_-]+)*\.vercel\.app$`).

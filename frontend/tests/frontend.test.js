@@ -59,7 +59,7 @@ describe('ProductHub Frontend Integrity & Configuration Tests', () => {
     const CONFIG = require(configPath);
     assert.ok(CONFIG, 'CONFIG object must be defined');
     assert.equal(CONFIG.API_BASE_URL, 'http://localhost:5000', 'Local dev API_BASE_URL must be http://localhost:5000');
-    assert.equal(CONFIG.PRODUCTION_API_BASE_URL, '', 'Production API_BASE_URL must be empty string for same-origin Vercel rewrites');
+    assert.equal(CONFIG.PRODUCTION_API_BASE_URL, 'http://3.108.53.179:5000', 'Production API_BASE_URL must target EC2 backend port 5000');
     assert.notEqual(CONFIG.PRODUCTION_API_BASE_URL, 'http://localhost:5000', 'Production API_BASE_URL must not hardcode localhost');
     assert.ok(configContent.includes('PRODUCTHUB_CONFIG'), 'Must preserve window.PRODUCTHUB_CONFIG runtime override');
     assert.ok(configContent.includes('PRODUCTHUB_API_URL'), 'Must preserve localStorage runtime override');
