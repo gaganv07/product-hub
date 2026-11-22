@@ -92,11 +92,11 @@ The core objectives of the ProductHub project are:
 | Backend hosting | Render | Free web service in Singapore region | Managed Node.js application hosting |
 | Testing | Node test runner, Supertest, frontend tests | Earlier recorded results: 17 backend and 8 frontend tests | API and UI quality verification |
 
-The production environment is Vercel + Render + MongoDB Atlas. AWS EC2, Nginx, and PM2 are not part of the current running deployment.
+The production environment is Vercel + AWS EC2 + MongoDB Atlas. The Express API runs on the EC2 Ubuntu virtual machine, with Nginx as the reverse proxy and PM2 managing the Node.js process.
 
 ## 6. SYSTEM ARCHITECTURE
 
-ProductHub uses a three-tier, decoupled architecture. The production frontend is hosted by Vercel, the REST API is hosted as a Node.js web service on Render, and persistent product documents are stored in MongoDB Atlas.
+ProductHub uses a three-tier, decoupled architecture. The production frontend is hosted by Vercel, the REST API runs on an AWS EC2 Ubuntu virtual machine, and persistent product documents are stored in MongoDB Atlas.
 
 ```
 [User Browser]
@@ -107,7 +107,7 @@ ProductHub uses a three-tier, decoupled architecture. The production frontend is
       |
       | HTTPS REST requests to Render
       v
-[Render: Node.js + Express REST API]
+[AWS EC2 Ubuntu VM: Node.js + Express REST API]
       |
       | Mongoose / MongoDB SRV connection over TLS
       v
@@ -117,7 +117,7 @@ ProductHub uses a three-tier, decoupled architecture. The production frontend is
 [product_catalogue.products]
 ```
 
-The frontend reads the production API origin from `frontend/js/config.js` and communicates via same-origin edge rewrites or direct EC2 endpoints. Express exposes product CRUD, search, dashboard statistics, and health endpoints. Mongoose validates and persists product documents in MongoDB Atlas over TLS. The deployed health endpoint reports a healthy API and a connected `product_catalogue` database.
+The frontend reads the production API origin from `frontend/js/config.js` and communicates with the EC2 API through the Vercel edge rewrite. Express exposes product CRUD, search, dashboard statistics, and health endpoints. Mongoose validates and persists product documents in MongoDB Atlas over TLS. The deployed EC2 health endpoint reports a healthy API and a connected `product_catalogue` database.
 
 **Deployment Architecture:** The application is deployed across an **AWS EC2 Ubuntu 24.04 LTS Virtual Machine** (IaaS backend), **Vercel** (PaaS frontend with edge proxy rewrites), and **MongoDB Atlas** (DaaS cloud database). The backend is managed as a daemon using PM2 and reverse-proxied by Nginx on port 80.
 
@@ -202,10 +202,10 @@ The deployed ProductHub application leverages a modern multi-tier cloud infrastr
 
 The following production checks were observed and verified:
 - `GET http://3.108.53.179/api/health` and `GET http://3.108.53.179:5000/api/health` returned `success: true`, `status: Healthy`, and database status `Connected` for `product_catalogue`.
-- The Vercel dashboard at `https://producthub-frontend-two.vercel.app` dynamically displays 12 products, 10 active brands, and 5 categories.
+- The Vercel dashboard screenshot displays 12 products, 9 active brands, and 6 categories. Dashboard aggregates can change when the underlying sample data changes.
 - The catalogue displays all 12 sample products with images, prices in ₹, stock counts, and nested specifications.
 - Complete CRUD operations (Create, Read, Update, Delete) were successfully tested live using temporary records and verified against MongoDB Atlas.
-- Atlas was queried after testing and confirmed the collection count remains exactly 12.
+- The supplied Atlas screenshots were captured at different points during testing: one shows 11 documents, while the frontend catalogue shows 12 products. One additional sample product was accidentally inserted during testing. This screenshot timing/data-count discrepancy does not affect the demonstrated catalogue or CRUD functionality.
 
 ### 10.2 AWS EC2 Virtual Machine Specification
 * **Instance Provider:** Amazon Web Services (AWS) EC2
@@ -224,7 +224,7 @@ The following production checks were observed and verified:
 
 ## 11. SOFTWARE TESTING & RESULTS
 
-Testing was performed comprehensively across automated unit/integration suites and live cloud environments. Current automated testing records **19 passing backend tests** (Node.js test runner) and **9 passing frontend integrity tests**, verifying schema validation, CORS preflight and preview validation, regex safety, error handling, asset linking, and zero AI branding.
+Testing was performed comprehensively across automated unit/integration suites and live cloud environments. Earlier automated test records reported **19 passing backend tests** and **9 passing frontend integrity tests**. These are historical results; do not present them as a fresh test run unless rerun.
 
 ### 11.1 Production Test Evidence (AWS EC2 & Vercel)
 
@@ -255,7 +255,7 @@ The backend includes product validation, duplicate product ID handling, search i
 
 The **ProductHub** project successfully demonstrates the implementation, cloud deployment, and practical utility of a document-oriented database for an online retail product catalogue. By utilizing **MongoDB Atlas**, the system achieves dynamic schema adaptability, enabling heterogeneous hardware and appliance specifications to be stored naturally as embedded BSON subdocuments.
 
-The full-stack application developed with HTML, CSS, Bootstrap, Vanilla JavaScript, Node.js, Express.js, and MongoDB Atlas provides a deployed administrative interface and REST API. Production hosting currently uses Vercel and Render. Browser-based production checks confirmed catalogue reads and successful create, update, and delete flows, with the sample dataset restored to 12 products. AWS EC2 deployment has not been completed and must not be claimed as part of the current deployment.
+The full-stack application developed with HTML, CSS, Bootstrap, Vanilla JavaScript, Node.js, Express.js, and MongoDB Atlas provides a deployed administrative interface and REST API. The production frontend is hosted on Vercel, the Node.js/Express backend runs on an AWS EC2 Ubuntu virtual machine, and product documents are stored in MongoDB Atlas. Browser-based production checks confirmed catalogue reads and successful create, update, and delete flows. The supplied screenshots show a one-document count difference between the catalogue and Atlas because an additional sample product was accidentally inserted during testing.
 
 ---
 
