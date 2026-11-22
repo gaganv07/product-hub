@@ -44,7 +44,12 @@
       try {
         var storedUrl = window.localStorage && window.localStorage.getItem('PRODUCTHUB_API_URL');
         if (storedUrl) {
-          return storedUrl;
+          // If running over HTTPS, reject stored insecure HTTP URLs to prevent Mixed Content failures
+          if (window.location && window.location.protocol === 'https:' && /^http:\/\//i.test(storedUrl)) {
+            window.localStorage.removeItem('PRODUCTHUB_API_URL');
+          } else {
+            return storedUrl;
+          }
         }
       } catch (e) {
         // Ignore storage access errors in restricted contexts
@@ -55,9 +60,9 @@
         return LOCAL_DEV_API_URL;
       }
 
-      // When running on Vercel over HTTPS, use same-origin relative URL ('')
+      // When running in production over HTTPS or on Vercel, use same-origin relative URL ('')
       // to route through Vercel reverse proxy rewrite and prevent browser Mixed Content blocking
-      if (window.location && window.location.protocol === 'https:' && window.location.hostname.endsWith('vercel.app')) {
+      if (window.location && (window.location.protocol === 'https:' || (host && host.endsWith('vercel.app')))) {
         return '';
       }
 

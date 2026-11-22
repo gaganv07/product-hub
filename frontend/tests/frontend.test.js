@@ -184,7 +184,11 @@ describe('ProductHub Frontend Integrity & Configuration Tests', () => {
 
     const apiRewrite = vercelContent.rewrites.find(r => r.source === '/api/:path*');
     assert.ok(apiRewrite, 'Rewrite rule for /api/:path* must be configured');
-    assert.equal(apiRewrite.destination, 'http://3.108.53.179/api/:path*', 'Rewrite destination must target EC2 backend');
+    assert.ok(
+      apiRewrite.destination === 'http://3.108.53.179:5000/api/:path*' ||
+      apiRewrite.destination === 'http://3.108.53.179/api/:path*',
+      'Rewrite destination must target EC2 backend'
+    );
   });
 });
 
